@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: documento('Departamentos', 'departamentos', ~{::contenido})}">
+<body>
+<div th:fragment="contenido" class="flex flex-col w-full">
+
+  <!-- Avisos (flash) -->
+  <div th:if="${error}" class="mb-space-md flex items-center gap-space-sm bg-error-container text-on-error-container px-space-lg py-space-sm rounded-xl">
+    <span class="material-symbols-outlined text-[20px]">error</span>
+    <span class="font-body-sm text-body-sm" th:text="${error}">Error</span>
+  </div>
+  <div th:if="${exito}" class="mb-space-md flex items-center gap-space-sm bg-tertiary-container text-on-tertiary-container px-space-lg py-space-sm rounded-xl">
+    <span class="material-symbols-outlined text-[20px]">check_circle</span>
+    <span class="font-body-sm text-body-sm" th:text="${exito}">Listo</span>
+  </div>
+
+  <!-- Nota de la regla real de borrado -->
+  <div class="mb-space-lg flex items-center gap-space-sm bg-surface-container-low px-space-lg py-space-sm rounded-xl text-on-surface">
+    <span class="material-symbols-outlined text-[20px] text-primary">policy</span>
+    <span class="font-body-sm text-body-sm">
+      <strong class="font-semibold">Regla:</strong> un departamento solo puede eliminarse si no tiene computadoras ni usuarios asignados.
+    </span>
+  </div>
+
+  <!-- Encabezado -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-space-md pb-space-lg">
+    <div class="flex items-center gap-space-sm">
+      <h1 class="font-headline-lg text-headline-lg text-on-surface">Departamentos</h1>
+      <span class="px-space-sm py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold"
+            th:text="|${#lists.size(departamentos)} unidades|">0 unidades</span>
+    </div>
+    <button type="button" onclick="abrirCrear()"
+            class="flex items-center gap-space-xs bg-primary-container hover:bg-primary text-on-primary px-space-md py-space-sm rounded-lg font-label-md text-label-md transition-colors shadow-sm">
+      <span class="material-symbols-outlined text-[18px]">add</span>Nuevo departamento
+    </button>
+  </div>
+
+  <!-- Tabla -->
+  <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col">
+    <div class="overflow-x-auto w-full">
+      <table class="w-full text-left font-body-sm text-body-sm text-on-surface">
+        <thead class="bg-surface-container-low text-on-surface-variant font-label-md text-label-md">
+          <tr>
+            <th class="py-space-md px-space-lg font-semibold">Departamento</th>
+            <th class="py-space-md px-space-lg font-semibold">Computadoras</th>
+            <th class="py-space-md px-space-lg font-semibold">Usuarios</th>
+            <th class="py-space-md px-space-lg font-semibold text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-surface-container">
+          <tr th:if="${#lists.isEmpty(departamentos)}">
+            <td colspan="4" class="py-space-xl px-space-lg text-center text-on-surface-variant">
+              No hay departamentos. Crea el primero con "Nuevo departamento".
+            </td>
+          </tr>
+          <tr th:each="d : ${departamentos}" class="hover:bg-surface-container-low/60 transition-colors">
+            <td class="py-space-md px-space-lg">
+              <div class="flex items-center gap-space-md">
+                <div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-primary shrink-0">
+                  <span class="material-symbols-outlined text-[20px]">domain</span>
+                </div>
+                <div class="flex flex-col min-w-0">
+                  <span class="font-headline-sm text-body-md text-on-surface" th:text="${d.nombre()}">Nombre</span>
+                  <div class="flex items-center gap-space-xs">
+                    <span class="font-label-sm text-label-sm text-primary font-semibold" th:text="${d.codigo()}">COD</span>
+                    <span th:if="${d.descripcion()}" class="text-on-surface-variant font-label-sm text-label-sm">·</span>
+                    <span th:if="${d.descripcion()}" class="font-label-sm text-label-sm text-on-surface-variant truncate" th:text="${d.descripcion()}">desc</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td class="py-space-md px-space-lg">
+              <span class="font-headline-sm text-body-sm text-on-surface" th:text="|${d.cantidadPcs()} PCs|">0 PCs</span>
+            </td>
+            <td class="py-space-md px-space-lg">
+              <span class="font-headline-sm text-body-sm text-on-surface" th:text="|${d.cantidadUsuarios()} usuarios|">0 usuarios</span>
+            </td>
+            <td class="py-space-md px-space-lg text-right">
+              <div class="flex items-center justify-end gap-space-xs">
+                <button type="button" class="btn-editar px-space-sm py-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors font-label-md text-label-md inline-flex items-center gap-1"
+                        th:data-id="${d.id()}" th:data-nombre="${d.nombre()}" th:data-codigo="${d.codigo()}" th:data-descripcion="${d.descripcion()}">
+                  <span class="material-symbols-outlined text-[16px]">edit</span>Editar
+                </button>
+                <button th:if="${d.eliminable()}" type="button"
+                        class="btn-eliminar px-space-sm py-1 rounded text-error bg-error-container/40 hover:bg-error-container hover:text-on-error-container transition-colors font-label-md text-label-md inline-flex items-center gap-1 font-semibold"
+                        th:data-id="${d.id()}" th:data-nombre="${d.nombre()}">
+                  <span class="material-symbols-outlined text-[16px]">delete</span>Eliminar
+                </button>
+                <span th:unless="${d.eliminable()}" class="relative group">
+                  <button type="button" disabled class="px-space-sm py-1 rounded text-outline/50 bg-surface-container-low cursor-not-allowed font-label-md text-label-md inline-flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">delete</span>Eliminar
+                  </button>
+                  <span class="absolute right-0 bottom-full mb-1 hidden group-hover:block z-30 w-56 p-2 bg-inverse-surface text-inverse-on-surface rounded shadow-lg font-label-sm text-label-sm text-center"
+                        th:text="|No se puede eliminar: ${d.cantidadPcs()} PCs y ${d.cantidadUsuarios()} usuarios|">no</span>
+                </span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MODAL crear/editar -->
+  <div id="modal-dept" class="fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/40 backdrop-blur-sm hidden">
+    <div class="bg-surface-container-lowest w-full max-w-lg rounded-xl shadow-xl overflow-hidden">
+      <form id="form-dept" method="post" th:action="@{/web/admin/departamentos}">
+        <div class="px-space-xl py-space-lg bg-surface-container-low flex items-center justify-between">
+          <h2 id="modal-dept-titulo" class="font-headline-sm text-headline-sm text-on-surface">Nuevo departamento</h2>
+          <button type="button" onclick="cerrarDept()" class="text-on-surface-variant hover:text-on-surface p-1 rounded-lg hover:bg-surface-container">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+        <div class="p-space-xl flex flex-col gap-space-md">
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-on-surface font-semibold">Nombre <span class="text-error">*</span></label>
+            <input name="nombre" id="f-nombre" type="text" required placeholder="Ej: Soporte, Ventas..."
+                   class="w-full px-space-md py-space-sm bg-surface-container-low focus:bg-surface-container-lowest rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-outline outline-none transition-colors">
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-on-surface font-semibold">Código / abreviación <span class="text-error">*</span></label>
+            <input name="codigo" id="f-codigo" type="text" required placeholder="Ej: TI, MKT, FIN"
+                   class="w-full px-space-md py-space-sm bg-surface-container-low focus:bg-surface-container-lowest rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-outline outline-none transition-colors">
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-on-surface font-semibold">Descripción <span class="text-on-surface-variant font-normal">(opcional)</span></label>
+            <textarea name="descripcion" id="f-desc" rows="2" placeholder="Alcance del área..."
+                      class="w-full px-space-md py-space-sm bg-surface-container-low focus:bg-surface-container-lowest rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-outline outline-none transition-colors resize-none"></textarea>
+          </div>
+        </div>
+        <div class="px-space-xl py-space-md bg-surface-container-low flex items-center justify-end gap-space-sm">
+          <button type="button" onclick="cerrarDept()" class="px-space-md py-space-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-label-md text-label-md transition-colors">Cancelar</button>
+          <button type="submit" class="px-space-md py-space-sm rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md font-semibold transition-colors shadow-sm">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL eliminar -->
+  <div id="modal-del" class="fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/40 backdrop-blur-sm hidden">
+    <div class="bg-surface-container-lowest w-full max-w-md rounded-xl shadow-xl overflow-hidden">
+      <form id="form-del" method="post" th:action="@{/web/admin/departamentos}">
+        <div class="p-space-xl flex flex-col gap-space-md">
+          <div class="w-12 h-12 rounded-full bg-error-container text-error flex items-center justify-center">
+            <span class="material-symbols-outlined text-[26px]">warning</span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <h3 class="font-headline-sm text-headline-sm text-on-surface">¿Eliminar departamento?</h3>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">
+              Vas a eliminar <strong id="del-nombre" class="font-semibold text-on-surface">—</strong> de forma definitiva.
+              No tiene computadoras ni usuarios vinculados.
+            </p>
+          </div>
+        </div>
+        <div class="px-space-xl py-space-md bg-surface-container-low flex items-center justify-end gap-space-sm">
+          <button type="button" onclick="cerrarDel()" class="px-space-md py-space-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-label-md text-label-md transition-colors">Cancelar</button>
+          <button type="submit" class="px-space-md py-space-sm rounded-lg bg-error text-on-error hover:bg-error-container hover:text-on-error-container font-label-md text-label-md font-semibold transition-colors shadow-sm">Confirmar eliminación</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script th:inline="none">
+    const BASE = '/web/admin/departamentos';
+    const modalDept = document.getElementById('modal-dept');
+    const modalDel = document.getElementById('modal-del');
+    const formDept = document.getElementById('form-dept');
+    const formDel = document.getElementById('form-del');
+
+    function abrirCrear() {
+      document.getElementById('modal-dept-titulo').innerText = 'Nuevo departamento';
+      formDept.setAttribute('action', BASE);
+      document.getElementById('f-nombre').value = '';
+      document.getElementById('f-codigo').value = '';
+      document.getElementById('f-desc').value = '';
+      modalDept.classList.remove('hidden');
+    }
+    function abrirEditar(ds) {
+      document.getElementById('modal-dept-titulo').innerText = 'Editar departamento';
+      formDept.setAttribute('action', BASE + '/' + ds.id);
+      document.getElementById('f-nombre').value = ds.nombre || '';
+      document.getElementById('f-codigo').value = ds.codigo || '';
+      document.getElementById('f-desc').value = ds.descripcion || '';
+      modalDept.classList.remove('hidden');
+    }
+    function cerrarDept() { modalDept.classList.add('hidden'); }
+    function abrirEliminar(ds) {
+      document.getElementById('del-nombre').innerText = ds.nombre || '';
+      formDel.setAttribute('action', BASE + '/' + ds.id + '/eliminar');
+      modalDel.classList.remove('hidden');
+    }
+    function cerrarDel() { modalDel.classList.add('hidden'); }
+
+    document.querySelectorAll('.btn-editar').forEach(b => b.addEventListener('click', () => abrirEditar(b.dataset)));
+    document.querySelectorAll('.btn-eliminar').forEach(b => b.addEventListener('click', () => abrirEliminar(b.dataset)));
+  </script>
+</div>
+</body>
+</html>

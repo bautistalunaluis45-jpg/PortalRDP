@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: documento('Usuarios', 'usuarios', ~{::contenido})}">
+<body>
+<div th:fragment="contenido" class="flex flex-col w-full">
+
+  <div th:if="${error}" class="mb-space-md flex items-center gap-space-sm bg-error-container text-on-error-container px-space-lg py-space-sm rounded-xl">
+    <span class="material-symbols-outlined text-[20px]">error</span><span class="font-body-sm text-body-sm" th:text="${error}">Error</span>
+  </div>
+  <div th:if="${exito}" class="mb-space-md flex items-center gap-space-sm bg-tertiary-container text-on-tertiary-container px-space-lg py-space-sm rounded-xl">
+    <span class="material-symbols-outlined text-[20px]">check_circle</span><span class="font-body-sm text-body-sm" th:text="${exito}">Listo</span>
+  </div>
+
+  <!-- Encabezado -->
+  <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-lg mb-space-xl">
+    <div>
+      <div class="flex items-center gap-space-sm mb-1">
+        <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Usuarios</h1>
+        <span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold"
+              th:text="|${resumen.total()} total|">0 total</span>
+      </div>
+      <p class="font-body-sm text-body-sm text-on-surface-variant">Alta, edición y estado de los usuarios del portal.</p>
+    </div>
+    <a th:href="@{/web/admin/usuarios/nuevo}"
+       class="inline-flex items-center gap-space-xs px-space-lg py-2 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md font-medium hover:bg-primary transition-all shadow-sm self-start lg:self-auto">
+      <span class="material-symbols-outlined text-[18px]">add</span>Nuevo usuario
+    </a>
+  </div>
+
+  <!-- Chips -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-space-md mb-space-xl">
+    <div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex items-center justify-between">
+      <div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Activos</span>
+        <span class="font-data-metric text-data-metric text-on-surface mt-0.5" th:text="${resumen.activos()}">0</span></div>
+      <div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-tertiary"><span class="material-symbols-outlined text-[20px]">verified_user</span></div>
+    </div>
+    <div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex items-center justify-between">
+      <div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Inactivos</span>
+        <span class="font-data-metric text-data-metric text-on-surface mt-0.5" th:text="${resumen.inactivos()}">0</span></div>
+      <div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-secondary"><span class="material-symbols-outlined text-[20px]">person_off</span></div>
+    </div>
+    <div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex items-center justify-between">
+      <div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Departamentos</span>
+        <span class="font-data-metric text-data-metric text-on-surface mt-0.5" th:text="${resumen.departamentos()}">0</span></div>
+      <div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[20px]">corporate_fare</span></div>
+    </div>
+    <div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex items-center justify-between">
+      <div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Administradores</span>
+        <span class="font-data-metric text-data-metric text-on-surface mt-0.5" th:text="${resumen.admins()}">0</span></div>
+      <div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[20px]">admin_panel_settings</span></div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm mb-space-lg flex flex-col md:flex-row items-stretch md:items-center justify-between gap-space-md">
+    <div class="relative flex-1 min-w-[240px]">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+      <input id="user-search" type="text" placeholder="Buscar por nombre o correo..."
+             class="w-full pl-9 pr-3 py-2 rounded-lg bg-surface-container-low text-on-surface placeholder:text-on-surface-variant font-body-sm text-body-sm outline-none focus:bg-surface-container-lowest transition-all">
+    </div>
+    <div class="flex flex-wrap items-center gap-space-sm">
+      <select id="dept-filter" class="pl-3 pr-8 py-2 rounded-lg bg-surface-container-low text-on-surface font-label-md text-label-md outline-none cursor-pointer">
+        <option value="all">Todos los departamentos</option>
+      </select>
+      <select id="status-filter" class="pl-3 pr-8 py-2 rounded-lg bg-surface-container-low text-on-surface font-label-md text-label-md outline-none cursor-pointer">
+        <option value="all">Todos los estados</option>
+        <option value="Activo">Solo activos</option>
+        <option value="Inactivo">Solo inactivos</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden flex flex-col">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-surface-container-low/60 text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
+            <th class="py-space-md px-space-lg font-semibold">Usuario</th>
+            <th class="py-space-md px-space-lg font-semibold">Departamento</th>
+            <th class="py-space-md px-space-lg font-semibold">Rol</th>
+            <th class="py-space-md px-space-lg font-semibold">Estado</th>
+            <th class="py-space-md px-space-lg font-semibold text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="users-tbody" class="divide-y divide-surface-container text-body-md font-body-md">
+          <tr th:each="u : ${usuarios}" class="user-row hover:bg-surface-container-low/40 transition-colors"
+              th:data-name="${u.nombre()}" th:data-email="${u.correo()}" th:data-dept="${u.departamentoNombre()}"
+              th:data-status="${u.activo()} ? 'Activo' : 'Inactivo'">
+            <td class="py-space-md px-space-lg">
+              <div class="flex items-center gap-space-md" th:classappend="${u.activo()} ? '' : 'opacity-70'">
+                <div class="w-9 h-9 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-headline-sm text-body-sm flex items-center justify-center shrink-0" th:text="${u.iniciales()}">AB</div>
+                <div class="flex flex-col min-w-0">
+                  <div class="flex items-center gap-space-xs">
+                    <span class="font-headline-sm text-body-md text-on-surface truncate font-semibold" th:text="${u.nombre()}">Nombre</span>
+                    <span th:if="${usuario != null and usuario.usuarioId == u.id()}" class="px-1.5 rounded bg-primary/10 text-primary font-label-sm text-[10px] uppercase font-bold">Tú</span>
+                  </div>
+                  <span class="font-body-sm text-body-sm text-on-surface-variant truncate" th:text="${u.correo()}">correo</span>
+                </div>
+              </div>
+            </td>
+            <td class="py-space-md px-space-lg">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface-variant font-label-md text-label-md font-medium" th:text="${u.departamentoNombre()}">Depto</span>
+            </td>
+            <td class="py-space-md px-space-lg">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full font-label-sm text-label-sm font-semibold"
+                    th:classappend="${u.rol().name() == 'ADMIN'} ? 'bg-primary-fixed text-on-primary-fixed-variant' : (${u.rol().name() == 'MANAGER'} ? 'bg-secondary-container text-on-secondary-container' : 'bg-surface-container text-on-surface-variant')"
+                    th:text="${u.rolEtiqueta()}">Rol</span>
+            </td>
+            <td class="py-space-md px-space-lg">
+              <span th:if="${u.activo()}" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-tertiary-container/15 text-tertiary font-label-sm text-label-sm font-semibold">
+                <span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>Activo</span>
+              <span th:unless="${u.activo()}" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-container text-secondary font-label-sm text-label-sm font-semibold">
+                <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>Inactivo</span>
+            </td>
+            <td class="py-space-md px-space-lg text-right">
+              <a th:href="@{/web/admin/usuarios/{id}(id=${u.id()})}"
+                 class="inline-flex items-center gap-1 px-space-md py-1 rounded-lg text-primary hover:bg-surface-container font-label-md text-label-md font-medium transition-colors">
+                <span class="material-symbols-outlined text-[16px]">visibility</span>Ver
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="no-results" class="hidden p-space-xl text-center text-on-surface-variant font-body-sm">No se encontraron usuarios con esos filtros.</div>
+  </div>
+
+  <script th:inline="none">
+    (function () {
+      const search = document.getElementById('user-search');
+      const deptFilter = document.getElementById('dept-filter');
+      const statusFilter = document.getElementById('status-filter');
+      const rows = Array.from(document.querySelectorAll('.user-row'));
+      const noResults = document.getElementById('no-results');
+
+      // Poblar filtro de departamentos con los presentes
+      const depts = [...new Set(rows.map(r => r.dataset.dept))].sort();
+      depts.forEach(d => { const o = document.createElement('option'); o.value = d; o.textContent = d; deptFilter.appendChild(o); });
+
+      function apply() {
+        const q = search.value.toLowerCase().trim();
+        const d = deptFilter.value, s = statusFilter.value;
+        let visible = 0;
+        rows.forEach(r => {
+          const ok = (r.dataset.name.toLowerCase().includes(q) || r.dataset.email.toLowerCase().includes(q))
+            && (d === 'all' || r.dataset.dept === d)
+            && (s === 'all' || r.dataset.status === s);
+          r.style.display = ok ? '' : 'none';
+          if (ok) visible++;
+        });
+        noResults.classList.toggle('hidden', visible !== 0);
+      }
+      search.addEventListener('input', apply);
+      deptFilter.addEventListener('change', apply);
+      statusFilter.addEventListener('change', apply);
+    })();
+  </script>
+</div>
+</body>
+</html>

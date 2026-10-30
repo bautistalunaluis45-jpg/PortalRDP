@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: documento('Detalle de usuario', 'usuarios', ~{::contenido})}">
+<body>
+<div th:fragment="contenido" class="max-w-6xl w-full mx-auto flex flex-col gap-space-lg">
+
+  <div th:if="${error}" class="flex items-center gap-space-sm bg-error-container text-on-error-container px-space-lg py-space-sm rounded-xl">
+    <span class="material-symbols-outlined text-[20px]">error</span><span class="font-body-sm text-body-sm" th:text="${error}">Error</span>
+  </div>
+  <div th:if="${exito}" class="flex items-center gap-space-sm bg-tertiary-container text-on-tertiary-container px-space-lg py-space-sm rounded-xl">
+    <span class="material-symbols-outlined text-[20px]">check_circle</span><span class="font-body-sm text-body-sm" th:text="${exito}">Listo</span>
+  </div>
+
+  <!-- Breadcrumb -->
+  <div class="flex items-center justify-between gap-space-md">
+    <div class="flex items-center gap-space-xs text-on-surface-variant font-label-md text-label-md">
+      <a th:href="@{/web/admin/usuarios}" class="hover:text-primary transition-colors flex items-center gap-1">
+        <span class="material-symbols-outlined text-[16px]">group</span>Usuarios</a>
+      <span class="text-outline-variant">/</span>
+      <span class="text-on-surface font-medium" th:text="${u.nombre()}">Nombre</span>
+    </div>
+    <a th:href="@{/web/admin/usuarios}" class="inline-flex items-center gap-space-xs px-space-md py-space-sm rounded-lg bg-surface-container-lowest text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all shadow-sm font-label-md text-label-md">
+      <span class="material-symbols-outlined text-[18px]">arrow_back</span>Volver
+    </a>
+  </div>
+
+  <!-- Cabecera con degradado -->
+  <div class="rounded-xl p-space-xl shadow-sm bg-gradient-to-br from-primary to-primary-container text-on-primary flex items-center gap-space-lg">
+    <div class="w-14 h-14 rounded-full bg-white/20 ring-2 ring-white/40 text-on-primary font-headline-md flex items-center justify-center shrink-0" th:text="${u.iniciales()}">AB</div>
+    <div class="flex flex-col min-w-0 gap-1">
+      <div class="flex items-center gap-space-sm flex-wrap">
+        <h1 class="font-headline-md text-headline-md truncate" th:text="${u.nombre()}">Nombre</h1>
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 text-on-primary font-label-sm text-label-sm font-semibold">
+          <span class="w-1.5 h-1.5 rounded-full" th:classappend="${u.activo()} ? 'bg-tertiary-fixed' : 'bg-white/60'"></span>
+          <span th:text="${u.activo()} ? 'Activo' : 'Inactivo'">Activo</span>
+        </span>
+      </div>
+      <span class="font-body-sm text-body-sm text-on-primary/80 truncate" th:text="${u.correo()}">correo</span>
+    </div>
+  </div>
+
+  <!-- Métricas -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-space-md">
+    <div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-md flex items-center gap-space-md">
+      <div class="w-10 h-10 rounded-lg bg-primary-fixed flex items-center justify-center text-primary shrink-0"><span class="material-symbols-outlined text-[20px]">badge</span></div>
+      <div class="flex flex-col min-w-0">
+        <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">ID de usuario</span>
+        <span class="font-headline-sm text-body-lg text-on-surface font-semibold" th:text="'#' + ${u.id()}">#0</span>
+      </div>
+    </div>
+    <div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-md flex items-center gap-space-md">
+      <div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-tertiary shrink-0"><span class="material-symbols-outlined text-[20px]">schedule</span></div>
+      <div class="flex flex-col min-w-0">
+        <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Último acceso</span>
+        <span class="font-headline-sm text-body-lg text-on-surface font-semibold truncate" th:text="${ultimoAcceso}">Sin registro</span>
+      </div>
+    </div>
+    <div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-md flex items-center gap-space-md">
+      <div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary shrink-0"><span class="material-symbols-outlined text-[20px]">monitor</span></div>
+      <div class="flex flex-col min-w-0">
+        <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">PCs de su departamento</span>
+        <span class="font-headline-sm text-body-lg text-on-surface font-semibold" th:text="${pcsDepartamento}">0</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+    <!-- Columna izquierda: datos + estado -->
+    <div class="lg:col-span-8 flex flex-col gap-space-lg">
+      <form method="post" th:action="@{/web/admin/usuarios/{id}(id=${u.id()})}" class="bg-surface-container-lowest rounded-xl p-space-xl shadow-sm flex flex-col gap-space-lg">
+        <div class="flex items-center gap-space-sm">
+          <div class="w-8 h-8 rounded-lg bg-primary-fixed flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[18px]">manage_accounts</span></div>
+          <h2 class="font-headline-sm text-headline-sm text-on-surface">Datos y permisos</h2>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-lg">
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-on-surface font-semibold" for="nombre">Nombre <span class="text-error">*</span></label>
+            <input id="nombre" name="nombre" type="text" required th:value="${u.nombre()}"
+                   class="w-full px-space-md py-space-sm bg-surface-container-low focus:bg-surface-container-lowest rounded-lg font-body-md text-body-md text-on-surface outline-none focus:ring-2 focus:ring-primary-container transition-all">
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <div class="flex items-center justify-between">
+              <label class="font-label-md text-label-md text-on-surface font-semibold" for="correo">Correo</label>
+              <span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant"><span class="material-symbols-outlined text-[13px] text-tertiary">lock</span>Identidad de Google</span>
+            </div>
+            <input id="correo" type="email" readonly th:value="${u.correo()}"
+                   class="w-full px-space-md py-space-sm bg-surface-container-low rounded-lg font-body-md text-body-md text-on-surface-variant cursor-not-allowed">
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-on-surface font-semibold" for="departamentoId">Departamento <span class="text-error">*</span></label>
+            <select id="departamentoId" name="departamentoId" required
+                    class="w-full px-space-md py-space-sm bg-surface-container-low focus:bg-surface-container-lowest rounded-lg font-body-md text-body-md text-on-surface outline-none cursor-pointer focus:ring-2 focus:ring-primary-container transition-all">
+              <option th:each="d : ${departamentos}" th:value="${d.id()}" th:text="${d.nombre()}" th:selected="${d.id() == u.departamentoId()}">Depto</option>
+            </select>
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-on-surface font-semibold" for="rol">Rol en el sistema <span class="text-error">*</span></label>
+            <select id="rol" name="rol" required
+                    class="w-full px-space-md py-space-sm bg-surface-container-low focus:bg-surface-container-lowest rounded-lg font-body-md text-body-md text-on-surface outline-none cursor-pointer focus:ring-2 focus:ring-primary-container transition-all">
+              <option value="EMPLEADO" th:selected="${u.rol().name() == 'EMPLEADO'}">Empleado</option>
+              <option value="MANAGER" th:selected="${u.rol().name() == 'MANAGER'}">Manager (global)</option>
+              <option value="ADMIN" th:selected="${u.rol().name() == 'ADMIN'}">Administrador</option>
+            </select>
+          </div>
+        </div>
+        <div class="pt-space-md flex items-center justify-end border-t border-surface-container">
+          <button type="submit" class="inline-flex items-center gap-space-xs px-space-lg py-space-sm rounded-lg bg-primary-container text-on-primary hover:bg-primary font-label-md text-label-md font-semibold shadow-sm transition-all">
+            <span class="material-symbols-outlined text-[18px]">save</span>Guardar cambios
+          </button>
+        </div>
+      </form>
+
+      <!-- Estado de la cuenta -->
+      <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-space-md">
+        <div class="flex items-start gap-space-sm">
+          <div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary shrink-0"><span class="material-symbols-outlined text-[18px]">toggle_on</span></div>
+          <div class="flex flex-col">
+            <span class="font-headline-sm text-body-md text-on-surface font-semibold">Estado de la cuenta</span>
+            <span class="font-body-sm text-body-sm text-on-surface-variant">Un usuario inactivo no puede iniciar sesión ni lanzar. No se borra: su historial se conserva.</span>
+          </div>
+        </div>
+        <div th:if="${usuario != null and usuario.usuarioId == u.id()}" class="font-label-sm text-label-sm text-on-surface-variant shrink-0">No puedes cambiar tu propio estado.</div>
+        <form th:unless="${usuario != null and usuario.usuarioId == u.id()}" method="post" th:action="@{/web/admin/usuarios/{id}/estado(id=${u.id()})}" class="shrink-0">
+          <input type="hidden" name="activo" th:value="${u.activo()} ? 'false' : 'true'">
+          <button th:if="${u.activo()}" type="submit" class="inline-flex items-center gap-space-xs px-space-lg py-space-sm rounded-lg bg-error-container text-error hover:bg-error/20 font-label-md text-label-md font-semibold transition-colors">
+            <span class="material-symbols-outlined text-[18px]">person_remove</span>Dar de baja
+          </button>
+          <button th:unless="${u.activo()}" type="submit" class="inline-flex items-center gap-space-xs px-space-lg py-space-sm rounded-lg bg-tertiary-container text-on-tertiary-container hover:opacity-90 font-label-md text-label-md font-semibold transition-colors">
+            <span class="material-symbols-outlined text-[18px]">check_circle</span>Reactivar
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Columna derecha: registro de actividad -->
+    <div class="lg:col-span-4">
+      <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+        <div class="flex items-center gap-space-sm">
+          <div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[18px]">history</span></div>
+          <div>
+            <h3 class="font-headline-sm text-headline-sm text-on-surface">Registro de actividad</h3>
+            <p class="font-label-sm text-label-sm text-on-surface-variant">Últimos 5 eventos de auditoría</p>
+          </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(actividad)}" class="flex flex-col items-center text-center gap-space-xs py-space-lg text-on-surface-variant">
+          <span class="material-symbols-outlined text-[28px]">inbox</span>
+          <span class="font-body-sm text-body-sm">Sin eventos registrados todavía.</span>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(actividad)}" class="flex flex-col gap-space-sm">
+          <div th:each="e : ${actividad}" class="relative pl-space-md py-space-sm pr-space-sm rounded-lg bg-surface-container-low border-l-2 border-primary-container/50 flex flex-col gap-1">
+            <div class="flex items-center justify-between gap-space-xs">
+              <span class="font-headline-sm text-body-sm text-on-surface font-semibold" th:text="${e.titulo()}">Evento</span>
+              <span class="font-label-sm text-label-sm text-on-surface-variant whitespace-nowrap" th:text="${e.fecha()}">fecha</span>
+            </div>
+            <span th:if="${e.detalle()}" class="font-body-sm text-body-sm text-on-surface-variant" th:text="${e.detalle()}">detalle</span>
+            <span th:if="${e.actor()}" class="font-label-sm text-label-sm text-on-surface-variant">por <span th:text="${e.actor()}">actor</span></span>
+          </div>
+        </div>
+
+        <a th:href="@{/web/admin/usuarios/{id}/auditoria(id=${u.id()})}" class="w-full py-space-sm px-space-md bg-surface-container-low hover:bg-surface-container-high text-primary font-label-md text-label-md rounded-lg transition-colors flex items-center justify-center gap-space-xs font-semibold">
+          <span class="material-symbols-outlined text-[16px]">receipt_long</span>Ver auditoría completa
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

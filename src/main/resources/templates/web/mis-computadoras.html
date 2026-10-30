@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Mis computadoras — Portal RDP</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style>
+<script src="https://cdn.tailwindcss.com"></script>
+<script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-tertiary":"#ffffff","primary-fixed-dim":"#b4c5ff","secondary-fixed-dim":"#b9c7df","error-container":"#ffdad6","tertiary":"#006242","tertiary-container":"#007d55","on-tertiary-fixed":"#002113","inverse-surface":"#213145","on-primary-fixed":"#00174b","error":"#ba1a1a","surface-container-high":"#dce9ff","inverse-on-surface":"#eaf1ff","outline-variant":"#c3c6d7","on-error":"#ffffff","surface-tint":"#0053db","surface-bright":"#f8f9ff","on-secondary-container":"#57657a","surface-dim":"#cbdbf5","on-surface-variant":"#434655","surface-variant":"#d3e4fe","primary":"#004ac6","surface":"#f8f9ff","secondary-container":"#d5e3fc","secondary":"#515f74","on-background":"#0b1c30","on-error-container":"#93000a","on-secondary-fixed-variant":"#3a485b","outline":"#737686","tertiary-fixed":"#6ffbbe","surface-container":"#e5eeff","tertiary-fixed-dim":"#4edea3","primary-fixed":"#dbe1ff","on-surface":"#0b1c30","on-tertiary-container":"#bdffdb","background":"#f8f9ff","surface-container-highest":"#d3e4fe","surface-container-low":"#eff4ff","on-primary-container":"#eeefff","on-primary":"#ffffff","surface-container-lowest":"#ffffff","inverse-primary":"#b4c5ff","on-primary-fixed-variant":"#003ea8","primary-container":"#2563eb","secondary-fixed":"#d5e3fc","on-secondary-fixed":"#0d1c2e"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"margin-lg":"2rem","space-sm":"0.5rem","gutter":"1rem","margin":"1rem","space-lg":"1rem","space-md":"0.75rem","space-xl":"1.5rem","gutter-lg":"1.5rem","margin-md":"1.5rem","space-xs":"0.25rem"},fontFamily:{"headline-md":["Inter"],"label-sm":["Inter"],"body-lg":["Inter"],"headline-lg":["Inter"],"headline-sm":["Inter"],"body-sm":["Inter"],"body-md":["Inter"],"headline-xl":["Inter"]},fontSize:{"headline-md":["20px",{lineHeight:"28px",letterSpacing:"-0.015em",fontWeight:"600"}],"label-sm":["11px",{lineHeight:"14px",letterSpacing:"0.04em",fontWeight:"600"}],"label-md":["12px",{lineHeight:"16px",letterSpacing:"0.01em",fontWeight:"500"}],"body-lg":["16px",{lineHeight:"24px",letterSpacing:"-0.005em",fontWeight:"400"}],"headline-lg":["28px",{lineHeight:"36px",letterSpacing:"-0.02em",fontWeight:"600"}],"headline-sm":["16px",{lineHeight:"24px",letterSpacing:"-0.01em",fontWeight:"600"}],"body-sm":["13px",{lineHeight:"18px",letterSpacing:"0em",fontWeight:"400"}],"body-md":["14px",{lineHeight:"20px",letterSpacing:"0em",fontWeight:"400"}],"headline-xl":["36px",{lineHeight:"44px",letterSpacing:"-0.025em",fontWeight:"600"}]}}}}</script>
+</head>
+<body class="bg-surface font-body-md text-body-md text-on-surface antialiased">
+
+<!-- Barra lateral -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-lowest z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+  <div class="flex flex-col">
+    <div class="h-16 px-space-lg flex items-center">
+      <div class="flex items-center gap-space-sm">
+        <span class="material-symbols-outlined text-primary text-3xl">lan</span>
+        <div class="flex flex-col">
+          <span class="font-headline-sm text-headline-sm text-on-surface leading-tight">PulseDesk</span>
+          <span class="inline-flex items-center px-space-xs py-0.5 rounded-DEFAULT bg-secondary-container text-on-secondary-fixed text-[10px] font-semibold tracking-wide uppercase">Portal Empleado</span>
+        </div>
+      </div>
+    </div>
+    <nav class="flex flex-col gap-space-xs px-space-md mt-space-lg">
+      <a aria-current="page" class="flex items-center gap-space-md px-space-md py-space-sm transition-colors bg-primary-container text-on-primary-container font-semibold rounded-lg"
+         th:href="@{/web/mis-computadoras}">
+        <span class="material-symbols-outlined text-xl">desktop_windows</span>
+        <span class="font-body-md text-body-md">Mis computadoras</span>
+      </a>
+      <a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors" th:href="@{/web/preferencias}">
+        <span class="material-symbols-outlined text-xl">tune</span>
+        <span class="font-body-md text-body-md">Preferencias</span>
+      </a>
+      <a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors" href="#" title="Disponible próximamente">
+        <span class="material-symbols-outlined text-xl">help</span>
+        <span class="font-body-md text-body-md">Ayuda</span>
+      </a>
+    </nav>
+  </div>
+
+  <!-- Tarjeta de perfil -->
+  <div class="p-space-md m-space-md rounded-xl bg-surface-container-low flex items-center justify-between">
+    <div class="flex items-center gap-space-sm min-w-0">
+      <div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center flex-shrink-0 font-semibold"
+           th:text="${#strings.toUpperCase(#strings.substring(usuario.nombre,0,1))}">S</div>
+      <div class="flex flex-col min-w-0">
+        <span class="font-body-sm text-body-sm font-semibold text-on-surface truncate" th:text="${usuario.nombre}">Nombre</span>
+        <span class="font-label-sm text-label-sm text-on-surface-variant truncate" th:text="${vista.departamentoNombre()}">Departamento</span>
+      </div>
+    </div>
+    <form th:action="@{/logout}" method="post">
+      <button type="submit" title="Cerrar sesión"
+              class="p-space-xs text-on-surface-variant hover:text-error transition-colors flex items-center justify-center rounded-lg hover:bg-surface-container-lowest">
+        <span class="material-symbols-outlined text-xl">logout</span>
+      </button>
+    </form>
+  </div>
+</aside>
+
+<div class="pl-64">
+  <!-- Encabezado superior -->
+  <header class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-md z-40 flex items-center justify-between px-gutter-lg shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+    <div class="flex items-center gap-space-lg">
+      <div class="flex items-center gap-space-xs">
+        <span class="w-2 h-2 rounded-full bg-tertiary-container"></span>
+        <span class="font-body-sm text-body-sm font-medium text-on-surface">Conexión por Tailscale</span>
+      </div>
+      <span class="hidden sm:inline-flex items-center gap-space-xs px-space-sm py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
+        <span class="material-symbols-outlined text-sm">verified_user</span>Túnel WireGuard
+      </span>
+    </div>
+    <div class="flex items-center gap-space-md">
+      <span class="font-label-md text-label-md text-on-surface-variant truncate max-w-[16rem]" th:text="${usuario.correo}">correo</span>
+    </div>
+  </header>
+
+  <main class="relative pt-16 w-full bg-surface min-h-screen">
+    <section class="w-full max-w-7xl mx-auto px-gutter-lg py-margin-md flex flex-col gap-space-xl">
+
+      <!-- Encabezado de la pantalla + chips -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+        <div class="flex flex-col gap-space-xs">
+          <div class="flex items-center gap-space-sm text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
+            <span class="material-symbols-outlined text-sm text-primary">lan</span>
+            <span>Acceso remoto</span>
+          </div>
+          <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Mis computadoras</h1>
+          <p class="font-body-md text-body-md text-on-surface-variant">Equipos de tu departamento y accesos temporales vigentes.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-space-sm">
+          <div class="flex items-center gap-space-xs px-space-md py-1.5 rounded-full bg-surface-container-lowest shadow-sm text-on-surface">
+            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Total:</span>
+            <span class="font-headline-sm text-headline-sm leading-none font-semibold" th:text="${vista.total()}">0</span>
+          </div>
+          <div class="flex items-center gap-space-xs px-space-md py-1.5 rounded-full bg-surface-container-lowest shadow-sm">
+            <span class="w-2 h-2 rounded-full bg-tertiary"></span>
+            <span class="font-label-sm text-label-sm uppercase font-semibold text-on-surface-variant">Libres:</span>
+            <span class="font-headline-sm text-headline-sm leading-none font-semibold text-tertiary" th:text="${vista.libres()}">0</span>
+          </div>
+          <div class="flex items-center gap-space-xs px-space-md py-1.5 rounded-full bg-surface-container-lowest shadow-sm">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            <span class="font-label-sm text-label-sm uppercase font-semibold text-on-surface-variant">En uso:</span>
+            <span class="font-headline-sm text-headline-sm leading-none font-semibold text-on-surface" th:text="${vista.ocupadas()}">0</span>
+          </div>
+          <div th:if="${vista.sinConexion() > 0}" class="flex items-center gap-space-xs px-space-md py-1.5 rounded-full bg-surface-container-lowest shadow-sm">
+            <span class="w-2 h-2 rounded-full bg-outline"></span>
+            <span class="font-label-sm text-label-sm uppercase font-semibold text-on-surface-variant">Sin conexión:</span>
+            <span class="font-headline-sm text-headline-sm leading-none font-semibold text-on-surface-variant" th:text="${vista.sinConexion()}">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seccion 1: PCs del departamento -->
+      <div class="flex flex-col gap-space-md">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-space-sm">
+            <span class="material-symbols-outlined text-primary text-xl">domain</span>
+            <h2 class="font-headline-sm text-headline-sm text-on-surface">
+              PCs de tu departamento (<span th:text="${vista.departamentoNombre()}">—</span>)
+            </h2>
+          </div>
+          <span class="font-label-sm text-label-sm text-on-surface-variant"
+                th:text="|${#lists.size(vista.departamento())} equipos|">0 equipos</span>
+        </div>
+
+        <p th:if="${#lists.isEmpty(vista.departamento())}" class="font-body-md text-on-surface-variant px-space-sm py-space-lg rounded-xl bg-surface-container-low">
+          No tienes computadoras asignadas en tu departamento.
+        </p>
+
+        <div th:unless="${#lists.isEmpty(vista.departamento())}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-lg">
+          <th:block th:each="c : ${vista.departamento()}">
+            <div th:replace="~{fragments/computadora :: tarjeta(${c})}"></div>
+          </th:block>
+        </div>
+      </div>
+
+      <!-- Seccion 2: Acceso temporal -->
+      <div th:unless="${#lists.isEmpty(vista.temporales())}" class="flex flex-col gap-space-md pt-space-md">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-space-sm">
+            <span class="material-symbols-outlined text-secondary text-xl">timer</span>
+            <h2 class="font-headline-sm text-headline-sm text-on-surface">Acceso temporal autorizado</h2>
+            <span class="inline-flex items-center px-space-sm py-0.5 rounded-full bg-secondary-container text-on-secondary-fixed text-[11px] font-semibold"
+                  th:text="|${#lists.size(vista.temporales())} autorizaciones|">0 autorizaciones</span>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-lg">
+          <th:block th:each="c : ${vista.temporales()}">
+            <div th:replace="~{fragments/computadora :: tarjeta(${c})}"></div>
+          </th:block>
+        </div>
+      </div>
+
+    </section>
+  </main>
+</div>
+</body>
+</html>

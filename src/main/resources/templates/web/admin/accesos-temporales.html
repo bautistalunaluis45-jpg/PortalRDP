@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: documento('Accesos temporales', 'accesos-temporales', ~{::contenido})}">
+<body>
+<div th:fragment="contenido" class="flex flex-col w-full gap-space-lg">
+
+  <div th:if="${error}" class="flex items-center gap-space-sm bg-error-container text-on-error-container px-space-lg py-space-sm rounded-xl">
+    <span class="material-symbols-outlined text-[20px]">error</span><span class="font-body-sm text-body-sm" th:text="${error}">Error</span>
+  </div>
+  <div th:if="${exito}" class="flex items-center gap-space-sm bg-tertiary-container text-on-tertiary-container px-space-lg py-space-sm rounded-xl">
+    <span class="material-symbols-outlined text-[20px]">check_circle</span><span class="font-body-sm text-body-sm" th:text="${exito}">Listo</span>
+  </div>
+
+  <!-- Encabezado -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+    <div class="flex flex-col gap-space-xs">
+      <div class="flex items-center gap-space-sm">
+        <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Accesos temporales</h1>
+        <span class="inline-flex items-center px-space-sm py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm font-semibold"
+              th:text="|${#lists.size(accesos)} vigentes|">0 vigentes</span>
+      </div>
+      <p class="font-body-md text-body-md text-on-surface-variant">Permisos temporales para que un usuario vea y lance una PC fuera de su departamento.</p>
+    </div>
+    <button type="button" onclick="abrirDar()"
+            class="inline-flex items-center gap-space-xs bg-primary-container hover:bg-primary text-on-primary px-space-lg py-space-sm rounded-lg shadow-sm font-label-md text-label-md font-semibold transition-all self-start md:self-auto">
+      <span class="material-symbols-outlined text-[18px]">add</span>Dar acceso
+    </button>
+  </div>
+
+  <!-- Tabla -->
+  <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col">
+    <div class="p-space-md border-b border-surface-container">
+      <div class="relative sm:w-96">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+        <input id="at-search" type="text" placeholder="Buscar por usuario o computadora..."
+               class="w-full pl-9 pr-3 py-2 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline font-body-sm text-body-sm outline-none focus:bg-surface-container-lowest transition-all">
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-surface-container-low/60 text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
+            <th class="py-space-md px-space-lg font-semibold">Usuario</th>
+            <th class="py-space-md px-space-lg font-semibold">Computadora</th>
+            <th class="py-space-md px-space-lg font-semibold">Vencimiento</th>
+            <th class="py-space-md px-space-lg text-right font-semibold">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="at-tbody" class="divide-y divide-surface-container">
+          <tr th:if="${#lists.isEmpty(accesos)}"><td colspan="4" class="py-space-xl px-space-lg text-center text-on-surface-variant">No hay accesos temporales vigentes.</td></tr>
+          <tr th:each="a : ${accesos}" class="at-row hover:bg-surface-container-low/40 transition-colors"
+              th:data-txt="${a.usuarioNombre() + ' ' + a.usuarioCorreo() + ' ' + a.computadoraNombre()}">
+            <td class="py-space-lg px-space-lg">
+              <div class="flex items-center gap-space-md">
+                <div class="w-8 h-8 rounded-full bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center font-label-sm text-label-sm font-semibold shrink-0" th:text="${a.iniciales()}">AB</div>
+                <div class="flex flex-col min-w-0">
+                  <span class="font-body-md text-body-md text-on-surface font-medium truncate" th:text="${a.usuarioNombre()}">Nombre</span>
+                  <span class="font-body-sm text-body-sm text-on-surface-variant truncate" th:text="${a.usuarioCorreo()}">correo</span>
+                </div>
+              </div>
+            </td>
+            <td class="py-space-lg px-space-lg">
+              <div class="flex items-center gap-space-sm">
+                <div class="w-7 h-7 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant shrink-0"><span class="material-symbols-outlined text-[16px]">desktop_windows</span></div>
+                <div class="flex flex-col min-w-0">
+                  <span class="font-body-md text-body-md text-on-surface font-medium truncate" th:text="${a.computadoraNombre()}">PC</span>
+                  <span class="font-body-sm text-body-sm text-on-surface-variant truncate" th:text="${a.departamentoNombre()}">Depto</span>
+                </div>
+              </div>
+            </td>
+            <td class="py-space-lg px-space-lg">
+              <div class="flex items-center gap-space-sm">
+                <span class="w-2 h-2 rounded-full bg-tertiary"></span>
+                <div class="flex flex-col">
+                  <span class="font-body-sm text-body-sm text-on-surface font-medium" th:text="${a.venceEnTexto()}">fecha</span>
+                  <span class="font-label-sm text-label-sm text-on-surface-variant" th:text="${a.restanteTexto()}">quedan</span>
+                </div>
+              </div>
+            </td>
+            <td class="py-space-lg px-space-lg text-right">
+              <form method="post" th:action="@{/web/admin/accesos-temporales/{id}/revocar(id=${a.id()})}"
+                    onsubmit="return confirm('¿Revocar este acceso temporal?');">
+                <button type="submit" class="inline-flex items-center gap-1.5 px-space-md py-1 rounded-lg text-error hover:bg-error-container hover:text-on-error-container transition-colors font-label-md text-label-md">
+                  <span class="material-symbols-outlined text-[16px]">block</span>Revocar
+                </button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="py-space-md px-space-lg bg-surface-container-low/30 text-on-surface-variant font-label-sm text-label-sm flex items-center gap-space-xs">
+      <span class="material-symbols-outlined text-[16px] text-tertiary">info</span>
+      Solo se muestran los accesos vigentes. Al vencer o revocarse, dejan de dar acceso (no se borran: quedan en la auditoría).
+    </div>
+  </div>
+
+  <!-- Modal dar acceso -->
+  <div id="modal-dar" class="fixed inset-0 z-50 flex items-center justify-center p-space-md bg-inverse-surface/40 backdrop-blur-sm hidden">
+    <div class="bg-surface-container-lowest rounded-xl shadow-xl w-full max-w-lg flex flex-col overflow-hidden">
+      <form method="post" th:action="@{/web/admin/accesos-temporales}">
+        <div class="px-space-xl py-space-lg bg-surface-container-low flex items-center justify-between">
+          <div class="flex items-center gap-space-sm">
+            <div class="w-8 h-8 rounded-lg bg-primary-fixed text-on-primary-fixed-variant flex items-center justify-center"><span class="material-symbols-outlined text-[20px]">add_moderator</span></div>
+            <h2 class="font-headline-sm text-headline-sm text-on-surface">Dar acceso temporal</h2>
+          </div>
+          <button type="button" onclick="cerrarDar()" class="p-1 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">close</span></button>
+        </div>
+        <div class="p-space-xl flex flex-col gap-space-md">
+          <!-- Usuario (buscador) -->
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-on-surface font-semibold">Usuario <span class="text-error">*</span></label>
+            <div class="relative" data-combo>
+              <input type="text" class="combo-input w-full px-space-md py-space-sm bg-surface-container-low focus:bg-surface-container-lowest rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-outline outline-none focus:ring-2 focus:ring-primary-container" placeholder="Escribe para buscar un usuario..." autocomplete="off">
+              <input type="hidden" name="usuarioId">
+              <ul class="combo-panel hidden absolute z-20 left-0 right-0 mt-1 max-h-56 overflow-auto bg-surface-container-lowest rounded-lg shadow-lg border border-outline-variant/30">
+                <li th:each="u : ${usuarios}" th:if="${u.activo()}" th:data-id="${u.id()}" th:data-label="${u.nombre() + ' — ' + u.correo()}"
+                    class="combo-item px-space-md py-space-sm font-body-sm text-body-sm text-on-surface hover:bg-surface-container-low cursor-pointer" th:text="${u.nombre() + ' — ' + u.correo()}">u</li>
+              </ul>
+            </div>
+          </div>
+          <!-- Computadora (buscador) -->
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-on-surface font-semibold">Computadora <span class="text-error">*</span></label>
+            <div class="relative" data-combo>
+              <input type="text" class="combo-input w-full px-space-md py-space-sm bg-surface-container-low focus:bg-surface-container-lowest rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-outline outline-none focus:ring-2 focus:ring-primary-container" placeholder="Escribe para buscar una computadora..." autocomplete="off">
+              <input type="hidden" name="computadoraId">
+              <ul class="combo-panel hidden absolute z-20 left-0 right-0 mt-1 max-h-56 overflow-auto bg-surface-container-lowest rounded-lg shadow-lg border border-outline-variant/30">
+                <li th:each="c : ${computadoras}" th:if="${c.activa()}" th:data-id="${c.id()}" th:data-label="${c.nombre() + ' — ' + c.departamentoNombre()}"
+                    class="combo-item px-space-md py-space-sm font-body-sm text-body-sm text-on-surface hover:bg-surface-container-low cursor-pointer" th:text="${c.nombre() + ' — ' + c.departamentoNombre()}">c</li>
+              </ul>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-space-md">
+            <div class="flex flex-col gap-1.5">
+              <label class="font-label-md text-label-md text-on-surface font-semibold" for="duracion">Duración <span class="text-error">*</span></label>
+              <select id="duracion" name="duracion" class="w-full px-space-md py-space-sm bg-surface-container-low focus:bg-surface-container-lowest rounded-lg font-body-sm text-body-sm text-on-surface outline-none cursor-pointer focus:ring-2 focus:ring-primary-container">
+                <option value="4">4 horas</option>
+                <option value="8">8 horas (jornada)</option>
+                <option value="24" selected>24 horas</option>
+                <option value="72">3 días</option>
+                <option value="168">7 días</option>
+                <option value="indefinido">Indefinido (hasta revocar)</option>
+              </select>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="font-label-md text-label-md text-on-surface font-semibold" for="motivo">Motivo <span class="text-on-surface-variant font-normal">(opcional)</span></label>
+              <input id="motivo" name="motivo" type="text" placeholder="Ej. soporte INC-123" class="w-full px-space-md py-space-sm bg-surface-container-low focus:bg-surface-container-lowest rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-outline outline-none focus:ring-2 focus:ring-primary-container">
+            </div>
+          </div>
+          <div class="p-space-sm rounded-lg bg-surface-container-low flex items-start gap-space-sm text-on-surface-variant">
+            <span class="material-symbols-outlined text-[18px] text-tertiary shrink-0 mt-0.5">policy</span>
+            <span class="font-label-sm text-label-sm leading-normal">La PC aparecerá en la lista del usuario mientras el acceso esté vigente. Queda registrado en la auditoría.</span>
+          </div>
+        </div>
+        <div class="px-space-xl py-space-md bg-surface-container-low flex items-center justify-end gap-space-sm">
+          <button type="button" onclick="cerrarDar()" class="px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container font-label-md text-label-md transition-colors">Cancelar</button>
+          <button type="submit" class="px-space-lg py-space-sm rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md font-semibold shadow-sm transition-all">Dar acceso</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script th:inline="none">
+    function abrirDar() { document.getElementById('modal-dar').classList.remove('hidden'); }
+    function cerrarDar() { document.getElementById('modal-dar').classList.add('hidden'); }
+    (function () {
+      const s = document.getElementById('at-search');
+      const rows = Array.from(document.querySelectorAll('.at-row'));
+      s.addEventListener('input', () => {
+        const q = s.value.toLowerCase().trim();
+        rows.forEach(r => { r.style.display = r.dataset.txt.toLowerCase().includes(q) ? '' : 'none'; });
+      });
+
+      // Buscadores (combobox) de usuario y computadora
+      document.querySelectorAll('[data-combo]').forEach(combo => {
+        const input = combo.querySelector('.combo-input');
+        const hidden = combo.querySelector('input[type=hidden]');
+        const panel = combo.querySelector('.combo-panel');
+        const items = Array.from(combo.querySelectorAll('.combo-item'));
+        const abrir = () => panel.classList.remove('hidden');
+        const cerrar = () => panel.classList.add('hidden');
+        const filtrar = () => {
+          const q = input.value.toLowerCase().trim();
+          items.forEach(li => { li.style.display = li.dataset.label.toLowerCase().includes(q) ? '' : 'none'; });
+          abrir();
+        };
+        input.addEventListener('focus', filtrar);
+        input.addEventListener('input', () => { hidden.value = ''; filtrar(); });
+        input.addEventListener('blur', () => setTimeout(cerrar, 150));
+        items.forEach(li => li.addEventListener('mousedown', e => {
+          e.preventDefault();
+          hidden.value = li.dataset.id;
+          input.value = li.dataset.label;
+          cerrar();
+        }));
+      });
+    })();
+  </script>
+</div>
+</body>
+</html>

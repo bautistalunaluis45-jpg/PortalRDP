@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: documento('Editar computadora', 'computadoras', ~{::contenido})}">
+<body>
+<div th:fragment="contenido" class="max-w-6xl w-full mx-auto flex flex-col gap-space-lg">
+
+  <div th:if="${error}" class="flex items-center gap-space-sm bg-error-container text-on-error-container px-space-lg py-space-sm rounded-xl">
+    <span class="material-symbols-outlined text-[20px]">error</span><span class="font-body-sm text-body-sm" th:text="${error}">Error</span>
+  </div>
+  <div th:if="${exito}" class="flex items-center gap-space-sm bg-tertiary-container text-on-tertiary-container px-space-lg py-space-sm rounded-xl">
+    <span class="material-symbols-outlined text-[20px]">check_circle</span><span class="font-body-sm text-body-sm" th:text="${exito}">Listo</span>
+  </div>
+
+  <!-- Breadcrumb -->
+  <div class="flex items-center justify-between gap-space-md">
+    <div class="flex items-center gap-space-xs text-on-surface-variant font-label-md text-label-md">
+      <a th:href="@{/web/admin/computadoras}" class="hover:text-primary transition-colors flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">monitor</span>Computadoras</a>
+      <span class="text-outline-variant">/</span><span class="text-on-surface font-medium" th:text="${c.nombre()}">PC</span>
+    </div>
+    <a th:href="@{/web/admin/computadoras}" class="inline-flex items-center gap-space-xs px-space-md py-space-sm rounded-lg bg-surface-container-lowest text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all shadow-sm font-label-md text-label-md">
+      <span class="material-symbols-outlined text-[18px]">arrow_back</span>Volver al inventario
+    </a>
+  </div>
+
+  <!-- Cabecera -->
+  <div class="bg-surface-container-lowest p-space-xl rounded-xl shadow-sm flex flex-wrap items-center gap-space-sm">
+    <div class="w-10 h-10 rounded-lg bg-primary-fixed flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[24px]">desktop_windows</span></div>
+    <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight" th:text="'Editar: ' + ${c.nombre()}">Editar</h1>
+    <span th:if="${c.estado().name() == 'LIBRE'}" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-tertiary/10 text-tertiary font-label-sm text-label-sm font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>Libre</span>
+    <span th:if="${c.estado().name() == 'OCUPADA'}" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span>Ocupada</span>
+    <span th:if="${c.estado().name() == 'SIN_CONEXION'}" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-container-high text-secondary font-label-sm text-label-sm font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-outline"></span>Sin conexión</span>
+    <span th:unless="${c.activa()}" class="inline-flex items-center px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant text-[11px] font-semibold uppercase">Inactiva</span>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+    <!-- Formulario -->
+    <form method="post" th:action="@{/web/admin/computadoras/{id}(id=${c.id()})}" class="lg:col-span-8 bg-surface-container-lowest rounded-xl shadow-sm p-space-xl flex flex-col gap-space-xl">
+      <!-- Sección 1 -->
+      <div class="flex flex-col gap-space-lg">
+        <div class="flex items-center gap-space-sm"><span class="w-2 h-5 rounded-full bg-primary"></span><h2 class="font-headline-sm text-headline-sm text-on-surface">1. Identificación y red</h2></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-space-lg">
+          <div class="flex flex-col gap-1.5 md:col-span-2">
+            <label class="font-label-md text-label-md text-on-surface font-semibold" for="nombre">Nombre (hostname) <span class="text-error">*</span></label>
+            <input id="nombre" name="nombre" type="text" required th:value="${c.nombre()}"
+                   class="w-full px-space-md py-space-sm bg-surface-container-low focus:bg-surface-container-lowest rounded-lg font-body-md text-body-md text-on-surface outline-none focus:ring-2 focus:ring-primary-container transition-all">
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-on-surface font-semibold" for="direccionTailscale">Dirección de Tailscale <span class="text-error">*</span></label>
+            <input id="direccionTailscale" name="direccionTailscale" type="text" required th:value="${c.direccionTailscale()}"
+                   class="w-full px-space-md py-space-sm bg-surface-container-low focus:bg-surface-container-lowest rounded-lg font-body-md text-body-md font-mono text-on-surface outline-none focus:ring-2 focus:ring-primary-container transition-all">
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-on-surface font-semibold" for="departamentoId">Departamento <span class="text-error">*</span></label>
+            <select id="departamentoId" name="departamentoId" required
+                    class="w-full px-space-md py-space-sm bg-surface-container-low focus:bg-surface-container-lowest rounded-lg font-body-md text-body-md text-on-surface outline-none cursor-pointer focus:ring-2 focus:ring-primary-container transition-all">
+              <option th:each="d : ${departamentos}" th:value="${d.id()}" th:text="${d.nombre()}" th:selected="${d.id() == c.departamentoId()}">Depto</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="h-px bg-surface-container-high w-full"></div>
+
+      <!-- Sección 2 -->
+      <div class="flex flex-col gap-space-lg">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-space-sm"><span class="w-2 h-5 rounded-full bg-primary-container"></span><h2 class="font-headline-sm text-headline-sm text-on-surface">2. Cuenta dedicada de la PC</h2></div>
+          <span class="inline-flex items-center gap-1 text-tertiary font-label-sm text-label-sm font-semibold bg-surface-container-low px-2 py-0.5 rounded"><span class="material-symbols-outlined text-[14px]">enhanced_encryption</span>Cifrado AES-256-GCM</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-space-lg">
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-on-surface font-semibold" for="cuentaUsuario">Usuario de la cuenta <span class="text-error">*</span></label>
+            <input id="cuentaUsuario" name="cuentaUsuario" type="text" required th:value="${c.cuentaUsuario()}"
+                   class="w-full px-space-md py-space-sm bg-surface-container-low focus:bg-surface-container-lowest rounded-lg font-body-md text-body-md text-on-surface outline-none focus:ring-2 focus:ring-primary-container transition-all">
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-on-surface font-semibold" for="password">Contraseña de la cuenta</label>
+            <input id="password" name="password" type="password" autocomplete="new-password"
+                   th:placeholder="${c.credencialConfigurada()} ? 'Dejar en blanco para no cambiarla' : 'Pendiente: captúrala aquí'"
+                   class="w-full px-space-md py-space-sm bg-surface-container-low focus:bg-surface-container-lowest rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline outline-none focus:ring-2 focus:ring-primary-container transition-all">
+          </div>
+        </div>
+        <div class="p-space-sm bg-surface-container-low rounded-lg flex items-start gap-space-sm">
+          <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">verified_user</span>
+          <p class="font-label-sm text-label-sm text-on-surface-variant leading-snug">
+            Por seguridad, la contraseña <strong class="text-on-surface">nunca se muestra</strong>. Déjala en blanco para conservarla; escribe una nueva para reemplazarla (se guarda cifrada AES-256-GCM).
+          </p>
+        </div>
+      </div>
+
+      <!-- Barra de acciones -->
+      <div class="pt-space-lg flex flex-col sm:flex-row items-center justify-between gap-space-md border-t border-surface-container">
+        <a th:href="@{/web/admin/computadoras}" class="w-full sm:w-auto text-center px-space-md py-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface-variant font-label-md text-label-md font-semibold transition-colors">Cancelar</a>
+        <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center gap-space-xs px-space-xl py-space-sm rounded-lg bg-primary-container text-on-primary hover:bg-primary font-label-md text-label-md font-semibold shadow-sm transition-all">
+          <span class="material-symbols-outlined text-[18px]">save</span>Guardar cambios
+        </button>
+      </div>
+    </form>
+
+    <!-- Sidebar -->
+    <div class="lg:col-span-4 flex flex-col gap-space-lg">
+      <!-- Estado del agente (real: último latido) -->
+      <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+        <div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-primary text-[20px]">sensors</span><h3 class="font-headline-sm text-body-md text-on-surface">Estado del agente</h3></div>
+        <div class="flex items-center justify-between py-1.5 px-space-md bg-surface-container-low rounded-lg font-label-md text-label-md">
+          <span class="text-on-surface-variant">Último latido</span>
+          <span class="font-semibold text-on-surface" th:text="${c.ultimoLatidoTexto()}">—</span>
+        </div>
+        <div class="flex items-center justify-between py-1.5 px-space-md bg-surface-container-low rounded-lg font-label-md text-label-md">
+          <span class="text-on-surface-variant">Credencial</span>
+          <span th:if="${c.credencialConfigurada()}" class="font-semibold text-tertiary">Configurada</span>
+          <span th:unless="${c.credencialConfigurada()}" class="font-semibold text-error">Pendiente</span>
+        </div>
+        <div class="flex items-center justify-between py-1.5 px-space-md bg-surface-container-low rounded-lg font-label-md text-label-md">
+          <span class="text-on-surface-variant">Token del agente</span>
+          <span th:if="${c.tokenConfigurado()}" class="font-semibold text-tertiary">Configurado</span>
+          <span th:unless="${c.tokenConfigurado()}" class="font-semibold text-error">Pendiente</span>
+        </div>
+
+        <!-- Token recién generado (se muestra una sola vez) -->
+        <div th:if="${tokenAgente}" class="p-space-md rounded-lg bg-primary-fixed/40 border border-primary-container/40 flex flex-col gap-space-xs">
+          <span class="font-label-sm text-label-sm text-on-primary-fixed-variant font-semibold">Token nuevo — cópialo ahora, no se vuelve a mostrar:</span>
+          <code class="font-mono text-body-sm text-on-surface break-all bg-surface-container-lowest rounded px-space-sm py-space-xs" th:text="${tokenAgente}">token</code>
+          <span class="font-label-sm text-label-sm text-on-surface-variant">Configúralo en el agente de la PC (cabecera X-Agent-Token).</span>
+        </div>
+
+        <form method="post" th:action="@{/web/admin/computadoras/{id}/token-agente(id=${c.id()})}"
+              onsubmit="return confirm('Se generará un token nuevo; el anterior dejará de funcionar. ¿Continuar?');">
+          <button type="submit" class="w-full inline-flex items-center justify-center gap-space-xs px-space-md py-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md font-semibold transition-colors">
+            <span class="material-symbols-outlined text-[18px]">key</span>
+            <span th:text="${c.tokenConfigurado()} ? 'Regenerar token del agente' : 'Generar token del agente'">Generar token</span>
+          </button>
+        </form>
+        <p class="font-label-sm text-label-sm text-on-surface-variant">El agente usa este token (por PC) para reportar sus sesiones por latido.</p>
+        <a th:href="@{/web/admin/computadoras/agente/descargar}"
+           class="w-full inline-flex items-center justify-center gap-space-xs px-space-md py-space-sm rounded-lg bg-primary-container text-on-primary hover:bg-primary font-label-md text-label-md font-semibold transition-colors">
+          <span class="material-symbols-outlined text-[18px]">download</span>Descargar agente
+        </a>
+        <p class="font-label-sm text-label-sm text-on-surface-variant">Instálalo en la PC, pégale la dirección del portal y este token.</p>
+      </div>
+
+      <!-- Estado de la PC (baja / reactivar) -->
+      <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-sm">
+        <div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-primary text-[20px]">power_settings_new</span><h3 class="font-headline-sm text-body-md text-on-surface">Estado de la computadora</h3></div>
+        <p class="font-label-sm text-label-sm text-on-surface-variant">Una PC inactiva no aparece para los empleados ni se puede lanzar. No se borra: su historial se conserva.</p>
+        <form method="post" th:action="@{/web/admin/computadoras/{id}/estado(id=${c.id()})}">
+          <input type="hidden" name="activa" th:value="${c.activa()} ? 'false' : 'true'">
+          <button th:if="${c.activa()}" type="submit" class="w-full inline-flex items-center justify-center gap-space-xs px-space-md py-space-sm rounded-lg bg-error-container text-error hover:bg-error/20 font-label-md text-label-md font-semibold transition-colors">
+            <span class="material-symbols-outlined text-[18px]">power_off</span>Dar de baja
+          </button>
+          <button th:unless="${c.activa()}" type="submit" class="w-full inline-flex items-center justify-center gap-space-xs px-space-md py-space-sm rounded-lg bg-tertiary-container text-on-tertiary-container hover:opacity-90 font-label-md text-label-md font-semibold transition-colors">
+            <span class="material-symbols-outlined text-[18px]">power</span>Reactivar
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

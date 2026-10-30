@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: documento('Computadoras', 'computadoras', ~{::contenido})}">
+<body>
+<div th:fragment="contenido" class="max-w-2xl w-full mx-auto">
+  <div class="bg-surface-container-lowest rounded-xl p-space-xl shadow-sm flex flex-col items-center text-center gap-space-md">
+    <div class="w-14 h-14 rounded-full bg-primary-fixed flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[28px]">rocket_launch</span></div>
+    <h1 class="font-headline-md text-headline-md text-on-surface"><span th:text="${accion}">Acción</span> — aún no disponible</h1>
+    <p class="font-body-md text-body-md text-on-surface-variant">
+      <span th:text="${accion}">Acción</span> sobre <strong class="text-on-surface" th:text="${computadora}">PC</strong>:
+      <span th:text="${detalle}">detalle</span>
+    </p>
+    <a th:href="@{/web/admin/computadoras}" class="inline-flex items-center gap-space-xs px-space-lg py-space-sm rounded-lg bg-primary-container text-on-primary hover:bg-primary font-label-md text-label-md font-semibold transition-all">
+      <span class="material-symbols-outlined text-[18px]">arrow_back</span>Volver a computadoras
+    </a>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: documento('Auditoría de usuario', 'usuarios', ~{::contenido})}">
+<body>
+<div th:fragment="contenido" class="max-w-4xl w-full mx-auto flex flex-col gap-space-lg">
+
+  <!-- Breadcrumb -->
+  <div class="flex items-center justify-between gap-space-md">
+    <div class="flex items-center gap-space-xs text-on-surface-variant font-label-md text-label-md">
+      <a th:href="@{/web/admin/usuarios}" class="hover:text-primary transition-colors flex items-center gap-1">
+        <span class="material-symbols-outlined text-[16px]">group</span>Usuarios</a>
+      <span class="text-outline-variant">/</span>
+      <a th:href="@{/web/admin/usuarios/{id}(id=${u.id()})}" class="hover:text-primary transition-colors" th:text="${u.nombre()}">Nombre</a>
+      <span class="text-outline-variant">/</span>
+      <span class="text-primary font-semibold">Auditoría</span>
+    </div>
+    <a th:href="@{/web/admin/usuarios/{id}(id=${u.id()})}" class="inline-flex items-center gap-space-xs px-space-md py-space-sm rounded-lg bg-surface-container-lowest text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all shadow-sm font-label-md text-label-md">
+      <span class="material-symbols-outlined text-[18px]">arrow_back</span>Volver al detalle
+    </a>
+  </div>
+
+  <!-- Encabezado -->
+  <div class="flex items-center gap-space-sm">
+    <div class="w-10 h-10 rounded-lg bg-primary-fixed flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[20px]">receipt_long</span></div>
+    <div class="flex flex-col">
+      <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Auditoría de <span th:text="${u.nombre()}">Nombre</span></h1>
+      <span class="font-body-sm text-body-sm text-on-surface-variant" th:text="|${#lists.size(historial)} eventos registrados · ${u.correo()}|">0 eventos</span>
+    </div>
+  </div>
+
+  <!-- Lista completa -->
+  <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-sm">
+    <div th:if="${#lists.isEmpty(historial)}" class="flex flex-col items-center text-center gap-space-xs py-space-xl text-on-surface-variant">
+      <span class="material-symbols-outlined text-[32px]">inbox</span>
+      <span class="font-body-md text-body-md">Este usuario no tiene eventos de auditoría todavía.</span>
+    </div>
+
+    <div th:unless="${#lists.isEmpty(historial)}" class="flex flex-col gap-space-sm">
+      <div th:each="e : ${historial}" class="relative pl-space-md py-space-sm pr-space-sm rounded-lg bg-surface-container-low border-l-2 border-primary-container/50 flex flex-col gap-1">
+        <div class="flex items-center justify-between gap-space-xs">
+          <span class="font-headline-sm text-body-sm text-on-surface font-semibold" th:text="${e.titulo()}">Evento</span>
+          <span class="font-label-sm text-label-sm text-on-surface-variant whitespace-nowrap" th:text="${e.fecha()}">fecha</span>
+        </div>
+        <span th:if="${e.detalle()}" class="font-body-sm text-body-sm text-on-surface-variant" th:text="${e.detalle()}">detalle</span>
+        <span th:if="${e.actor()}" class="font-label-sm text-label-sm text-on-surface-variant">por <span th:text="${e.actor()}">actor</span></span>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

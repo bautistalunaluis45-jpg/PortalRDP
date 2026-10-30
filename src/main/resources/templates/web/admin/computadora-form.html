@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: documento('Nueva computadora', 'computadoras', ~{::contenido})}">
+<body>
+<div th:fragment="contenido" class="max-w-4xl w-full mx-auto flex flex-col gap-space-lg">
+
+  <!-- Breadcrumb -->
+  <div class="flex items-center justify-between gap-space-md">
+    <div class="flex items-center gap-space-xs text-on-surface-variant font-label-md text-label-md">
+      <a th:href="@{/web/admin/computadoras}" class="hover:text-primary transition-colors flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">monitor</span>Computadoras</a>
+      <span class="text-outline-variant">/</span><span class="text-primary font-semibold">Nueva</span>
+    </div>
+    <a th:href="@{/web/admin/computadoras}" class="inline-flex items-center gap-space-xs px-space-md py-space-sm rounded-lg bg-surface-container-lowest text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all shadow-sm font-label-md text-label-md">
+      <span class="material-symbols-outlined text-[18px]">arrow_back</span>Volver al inventario
+    </a>
+  </div>
+
+  <div class="flex items-center gap-space-sm">
+    <div class="w-10 h-10 rounded-lg bg-primary-fixed flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[24px]">add_to_queue</span></div>
+    <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Nueva computadora</h1>
+  </div>
+
+  <form method="post" th:action="@{/web/admin/computadoras}" class="bg-surface-container-lowest rounded-xl shadow-sm p-space-xl flex flex-col gap-space-xl">
+    <!-- Sección 1 -->
+    <div class="flex flex-col gap-space-lg">
+      <div class="flex items-center gap-space-sm">
+        <span class="w-2 h-5 rounded-full bg-primary"></span>
+        <h2 class="font-headline-sm text-headline-sm text-on-surface">1. Identificación y red</h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-space-lg">
+        <div class="flex flex-col gap-1.5 md:col-span-2">
+          <label class="font-label-md text-label-md text-on-surface font-semibold" for="nombre">Nombre (hostname) <span class="text-error">*</span></label>
+          <input id="nombre" name="nombre" type="text" required placeholder="Ej. PC-SOPORTE-03"
+                 class="w-full px-space-md py-space-sm bg-surface-container-low focus:bg-surface-container-lowest rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline outline-none focus:ring-2 focus:ring-primary-container transition-all">
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="font-label-md text-label-md text-on-surface font-semibold" for="direccionTailscale">Dirección de Tailscale <span class="text-error">*</span></label>
+          <input id="direccionTailscale" name="direccionTailscale" type="text" required placeholder="100.100.0.xx"
+                 class="w-full px-space-md py-space-sm bg-surface-container-low focus:bg-surface-container-lowest rounded-lg font-body-md text-body-md font-mono text-on-surface placeholder:text-outline outline-none focus:ring-2 focus:ring-primary-container transition-all">
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="font-label-md text-label-md text-on-surface font-semibold" for="departamentoId">Departamento <span class="text-error">*</span></label>
+          <select id="departamentoId" name="departamentoId" required
+                  class="w-full px-space-md py-space-sm bg-surface-container-low focus:bg-surface-container-lowest rounded-lg font-body-md text-body-md text-on-surface outline-none cursor-pointer focus:ring-2 focus:ring-primary-container transition-all">
+            <option value="" disabled selected>Selecciona un departamento</option>
+            <option th:each="d : ${departamentos}" th:value="${d.id()}" th:text="${d.nombre()}">Depto</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="h-px bg-surface-container-high w-full"></div>
+
+    <!-- Sección 2 -->
+    <div class="flex flex-col gap-space-lg">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-space-sm">
+          <span class="w-2 h-5 rounded-full bg-primary-container"></span>
+          <h2 class="font-headline-sm text-headline-sm text-on-surface">2. Cuenta dedicada de la PC</h2>
+        </div>
+        <span class="inline-flex items-center gap-1 text-tertiary font-label-sm text-label-sm font-semibold bg-surface-container-low px-2 py-0.5 rounded"><span class="material-symbols-outlined text-[14px]">enhanced_encryption</span>Cifrado AES-256-GCM</span>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-space-lg">
+        <div class="flex flex-col gap-1.5">
+          <label class="font-label-md text-label-md text-on-surface font-semibold" for="cuentaUsuario">Usuario de la cuenta <span class="text-error">*</span></label>
+          <input id="cuentaUsuario" name="cuentaUsuario" type="text" required placeholder="Ej. rdpuser"
+                 class="w-full px-space-md py-space-sm bg-surface-container-low focus:bg-surface-container-lowest rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline outline-none focus:ring-2 focus:ring-primary-container transition-all">
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="font-label-md text-label-md text-on-surface font-semibold" for="password">Contraseña de la cuenta <span class="text-error">*</span></label>
+          <input id="password" name="password" type="password" required placeholder="••••••••••••" autocomplete="new-password"
+                 class="w-full px-space-md py-space-sm bg-surface-container-low focus:bg-surface-container-lowest rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline outline-none focus:ring-2 focus:ring-primary-container transition-all">
+        </div>
+      </div>
+      <div class="p-space-sm bg-surface-container-low rounded-lg flex items-start gap-space-sm">
+        <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">verified_user</span>
+        <p class="font-label-sm text-label-sm text-on-surface-variant leading-snug">
+          La contraseña se guarda <strong class="text-on-surface">cifrada (AES-256-GCM)</strong> y <strong class="text-on-surface">nunca se vuelve a mostrar</strong>. Solo sale del portal al canjear un token de lanzamiento.
+        </p>
+      </div>
+    </div>
+
+    <div class="pt-space-md flex items-center justify-end gap-space-sm border-t border-surface-container">
+      <a th:href="@{/web/admin/computadoras}" class="px-space-lg py-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface-variant font-label-md text-label-md font-semibold transition-colors">Cancelar</a>
+      <button type="submit" class="inline-flex items-center gap-space-xs px-space-xl py-space-sm rounded-lg bg-primary-container text-on-primary hover:bg-primary font-label-md text-label-md font-semibold shadow-sm transition-all">
+        <span class="material-symbols-outlined text-[18px]">add</span>Crear computadora
+      </button>
+    </div>
+  </form>
+</div>
+</body>
+</html>

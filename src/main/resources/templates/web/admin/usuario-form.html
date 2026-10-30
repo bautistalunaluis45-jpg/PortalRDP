@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: documento('Nuevo usuario', 'usuarios', ~{::contenido})}">
+<body>
+<div th:fragment="contenido" class="max-w-3xl w-full mx-auto flex flex-col gap-space-lg">
+
+  <!-- Breadcrumb -->
+  <div class="flex items-center justify-between gap-space-md">
+    <div class="flex items-center gap-space-xs text-on-surface-variant font-label-md text-label-md">
+      <a th:href="@{/web/admin/usuarios}" class="hover:text-primary transition-colors flex items-center gap-1">
+        <span class="material-symbols-outlined text-[16px]">group</span>Usuarios</a>
+      <span class="text-outline-variant">/</span>
+      <span class="text-primary font-semibold">Nuevo usuario</span>
+    </div>
+    <a th:href="@{/web/admin/usuarios}" class="inline-flex items-center gap-space-xs px-space-md py-space-sm rounded-lg bg-surface-container-lowest text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all shadow-sm font-label-md text-label-md">
+      <span class="material-symbols-outlined text-[18px]">arrow_back</span>Volver
+    </a>
+  </div>
+
+  <div class="flex flex-col gap-space-xs">
+    <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Nuevo usuario</h1>
+    <p class="font-body-md text-body-md text-on-surface-variant">Da de alta un colaborador. El acceso es con su cuenta de Google; no se define contraseña.</p>
+  </div>
+
+  <form method="post" th:action="@{/web/admin/usuarios}" class="bg-surface-container-lowest rounded-xl shadow-sm p-space-xl flex flex-col gap-space-lg">
+    <!-- Nombre -->
+    <div class="flex flex-col gap-1.5">
+      <label class="font-label-md text-label-md text-on-surface font-semibold" for="nombre">Nombre completo <span class="text-error">*</span></label>
+      <input id="nombre" name="nombre" type="text" required placeholder="Ej. Ana López"
+             class="w-full px-space-md py-space-sm bg-surface-container-low focus:bg-surface-container-lowest rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline outline-none focus:ring-2 focus:ring-primary-container transition-all">
+      <span class="font-body-sm text-body-sm text-on-surface-variant">Es el nombre visible cuando una computadora está ocupada.</span>
+    </div>
+    <!-- Correo -->
+    <div class="flex flex-col gap-1.5">
+      <label class="font-label-md text-label-md text-on-surface font-semibold" for="correo">Correo de Google <span class="text-error">*</span></label>
+      <input id="correo" name="correo" type="email" required placeholder="ana.lopez@gmail.com"
+             class="w-full px-space-md py-space-sm bg-surface-container-low focus:bg-surface-container-lowest rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline outline-none focus:ring-2 focus:ring-primary-container transition-all">
+      <span class="font-body-sm text-body-sm text-on-surface-variant">Debe ser la cuenta de Google con la que entrará. Solo entran los usuarios dados de alta aquí.</span>
+    </div>
+    <!-- Departamento -->
+    <div class="flex flex-col gap-1.5">
+      <label class="font-label-md text-label-md text-on-surface font-semibold" for="departamentoId">Departamento <span class="text-error">*</span></label>
+      <select id="departamentoId" name="departamentoId" required
+              class="w-full px-space-md py-space-sm bg-surface-container-low focus:bg-surface-container-lowest rounded-lg font-body-md text-body-md text-on-surface outline-none cursor-pointer focus:ring-2 focus:ring-primary-container transition-all">
+        <option value="" disabled selected>Selecciona un departamento</option>
+        <option th:each="d : ${departamentos}" th:value="${d.id()}" th:text="${d.nombre()}">Depto</option>
+      </select>
+    </div>
+    <!-- Rol -->
+    <div class="flex flex-col gap-space-md">
+      <label class="font-label-md text-label-md text-on-surface font-semibold">Rol en el sistema <span class="text-error">*</span></label>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-space-md" id="roles">
+        <label class="rol-card relative flex flex-col p-space-md rounded-xl bg-surface-container-low cursor-pointer transition-all border-2 border-transparent" data-rol="EMPLEADO">
+          <input class="sr-only" type="radio" name="rol" value="EMPLEADO" checked>
+          <span class="material-symbols-outlined text-[20px] text-primary mb-space-sm">person</span>
+          <span class="font-headline-sm text-body-md font-semibold text-on-surface mb-1">Empleado</span>
+          <span class="font-body-sm text-body-sm text-on-surface-variant">Accede a las PCs de su departamento y sus accesos temporales.</span>
+        </label>
+        <label class="rol-card relative flex flex-col p-space-md rounded-xl bg-surface-container-low cursor-pointer transition-all border-2 border-transparent" data-rol="MANAGER">
+          <input class="sr-only" type="radio" name="rol" value="MANAGER">
+          <span class="material-symbols-outlined text-[20px] text-secondary mb-space-sm">supervisor_account</span>
+          <span class="font-headline-sm text-body-md font-semibold text-on-surface mb-1">Manager</span>
+          <span class="font-body-sm text-body-sm text-on-surface-variant">Global: ve y se conecta a las PCs de todos los departamentos.</span>
+        </label>
+        <label class="rol-card relative flex flex-col p-space-md rounded-xl bg-surface-container-low cursor-pointer transition-all border-2 border-transparent" data-rol="ADMIN">
+          <input class="sr-only" type="radio" name="rol" value="ADMIN">
+          <span class="material-symbols-outlined text-[20px] text-secondary mb-space-sm">shield_person</span>
+          <span class="font-headline-sm text-body-md font-semibold text-on-surface mb-1">Administrador</span>
+          <span class="font-body-sm text-body-sm text-on-surface-variant">Control total: usuarios, departamentos, computadoras y reglas.</span>
+        </label>
+      </div>
+    </div>
+    <!-- Acciones -->
+    <div class="pt-space-md flex items-center justify-end gap-space-sm border-t border-surface-container">
+      <a th:href="@{/web/admin/usuarios}" class="px-space-lg py-space-sm rounded-lg bg-surface-container-high text-on-surface-variant hover:text-on-surface font-label-md text-label-md font-semibold transition-all">Cancelar</a>
+      <button type="submit" class="inline-flex items-center gap-space-xs px-space-lg py-space-sm rounded-lg bg-primary-container text-on-primary hover:bg-primary font-label-md text-label-md font-semibold shadow-sm transition-all">
+        <span class="material-symbols-outlined text-[18px]">person_add</span>Crear usuario
+      </button>
+    </div>
+  </form>
+
+  <script th:inline="none">
+    (function () {
+      const cards = document.querySelectorAll('.rol-card');
+      function marcar() {
+        cards.forEach(c => {
+          const sel = c.querySelector('input').checked;
+          c.classList.toggle('border-primary-container', sel);
+          c.classList.toggle('bg-surface-container-lowest', sel);
+          c.classList.toggle('shadow-sm', sel);
+          c.classList.toggle('border-transparent', !sel);
+        });
+      }
+      cards.forEach(c => c.addEventListener('click', () => { c.querySelector('input').checked = true; marcar(); }));
+      marcar();
+    })();
+  </script>
+</div>
+</body>
+</html>

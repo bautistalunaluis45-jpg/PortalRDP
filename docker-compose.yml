@@ -1,0 +1,27 @@
+# PostgreSQL para desarrollo del Portal RDP.
+# Uso: docker compose up -d
+# Las credenciales se toman de un archivo .env opcional (ver .env.example);
+# si no existe, se usan los valores por defecto de abajo.
+
+services:
+  postgres:
+    image: postgres:18
+    container_name: portal-rdp-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-portal_rdp}
+      POSTGRES_USER: ${DB_USER:-portal}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-portal}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    # En imagenes de PostgreSQL 18+ el volumen se monta en /var/lib/postgresql
+    # (los datos quedan en un subdirectorio por version). No usar .../data.
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-portal} -d ${DB_NAME:-portal_rdp}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

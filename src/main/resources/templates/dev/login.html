@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login de desarrollo — Portal RDP</title>
+</head>
+<body>
+    <main>
+        <h1>Portal RDP — login de desarrollo</h1>
+        <p><strong>Modo desarrollo.</strong> Entra como cualquiera de los usuarios activos,
+           sin Google ni contrasena. Esta pantalla no existe en produccion.</p>
+
+        <p th:if="${usuarios.isEmpty()}">No hay usuarios activos. Revisa los datos semilla.</p>
+
+        <ul>
+            <li th:each="u : ${usuarios}">
+                <form th:action="@{/dev/login}" method="post">
+                    <input type="hidden" name="correo" th:value="${u.correo}">
+                    <button type="submit"
+                            th:text="|Entrar como ${u.nombre} (${u.rol}) — ${u.correo}|">Entrar</button>
+                </form>
+            </li>
+        </ul>
+    </main>
+</body>
+</html>

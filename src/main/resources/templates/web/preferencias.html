@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: documento('Preferencias', 'preferencias', ~{::contenido})}">
+<body>
+<div th:fragment="contenido" class="max-w-5xl w-full mx-auto flex flex-col gap-space-lg">
+
+  <div th:if="${error}" class="flex items-center gap-space-sm bg-error-container text-on-error-container px-space-lg py-space-sm rounded-xl">
+    <span class="material-symbols-outlined text-[20px]">error</span><span class="font-body-sm text-body-sm" th:text="${error}">Error</span>
+  </div>
+  <div th:if="${exito}" class="flex items-center gap-space-sm bg-tertiary-container text-on-tertiary-container px-space-lg py-space-sm rounded-xl">
+    <span class="material-symbols-outlined text-[20px]">check_circle</span><span class="font-body-sm text-body-sm" th:text="${exito}">Listo</span>
+  </div>
+
+  <div class="flex flex-col gap-space-xs">
+    <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Preferencias de conexión</h1>
+    <p class="font-body-md text-body-md text-on-surface-variant">Ajusta pantalla, periféricos y rendimiento de tus sesiones remotas. Se aplican en tu próxima conexión.</p>
+  </div>
+
+  <form id="form-prefs" method="post" th:action="@{/web/preferencias}" class="flex flex-col gap-space-lg">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter-lg">
+
+      <!-- Pantalla -->
+      <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+        <div class="flex items-center gap-space-sm pb-space-xs">
+          <div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary"><span class="material-symbols-outlined text-xl">display_settings</span></div>
+          <div><h2 class="font-headline-sm text-headline-sm text-on-surface">Pantalla</h2><p class="font-body-sm text-body-sm text-on-surface-variant">Visualización y monitores</p></div>
+        </div>
+        <div class="flex flex-col divide-y divide-surface-container">
+          <div class="flex items-center justify-between py-space-sm">
+            <div class="flex flex-col pr-space-md"><span class="font-body-md text-body-md font-medium text-on-surface">Ajustar automáticamente a mi pantalla</span><span class="font-body-sm text-body-sm text-on-surface-variant">Adapta el escritorio remoto a tu ventana sin deformar</span></div>
+            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+              <input type="checkbox" name="ajusteAutomatico" class="sr-only peer" th:checked="${prefs.ajusteAutomatico()}">
+              <div class="w-11 h-6 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-container-lowest after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+            </label>
+          </div>
+          <div class="flex items-center justify-between py-space-sm">
+            <div class="flex flex-col pr-space-md"><span class="font-body-md text-body-md font-medium text-on-surface">Iniciar en pantalla completa</span><span class="font-body-sm text-body-sm text-on-surface-variant">Abre la sesión ocupando toda la pantalla</span></div>
+            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+              <input type="checkbox" name="pantallaCompleta" class="sr-only peer" th:checked="${prefs.pantallaCompleta()}">
+              <div class="w-11 h-6 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-container-lowest after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+            </label>
+          </div>
+          <div class="flex items-center justify-between py-space-sm">
+            <div class="flex flex-col pr-space-md"><span class="font-body-md text-body-md font-medium text-on-surface">Usar todas mis pantallas</span><span class="font-body-sm text-body-sm text-on-surface-variant">Permite trabajar con varios monitores a la vez</span></div>
+            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+              <input type="checkbox" name="multimonitor" class="sr-only peer" th:checked="${prefs.multimonitor()}">
+              <div class="w-11 h-6 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-container-lowest after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+            </label>
+          </div>
+          <div class="flex items-center justify-between py-space-sm gap-space-md">
+            <div class="flex flex-col pr-space-md"><span class="font-body-md text-body-md font-medium text-on-surface">Tamaño / escala</span><span class="font-body-sm text-body-sm text-on-surface-variant">Agranda el contenido en pantallas de alta resolución</span></div>
+            <select name="escala" class="bg-surface-container-low text-on-surface font-body-md text-body-md py-2 px-space-md rounded-lg cursor-pointer focus:outline-none focus:bg-surface-container-lowest">
+              <option th:each="e : ${ {100,125,150,175,200} }" th:value="${e}" th:text="${e} + '%'" th:selected="${prefs.escala() == e}">100%</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Periféricos y teclado -->
+      <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+        <div class="flex items-center gap-space-sm pb-space-xs">
+          <div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary"><span class="material-symbols-outlined text-xl">volume_up</span></div>
+          <div><h2 class="font-headline-sm text-headline-sm text-on-surface">Periféricos y teclado</h2><p class="font-body-sm text-body-sm text-on-surface-variant">Sonido, micrófono y atajos</p></div>
+        </div>
+        <div class="flex flex-col gap-space-md">
+          <div class="flex flex-col gap-space-xs">
+            <label class="font-body-sm text-body-sm font-medium text-on-surface" for="sonido">Sonido del equipo remoto</label>
+            <select id="sonido" name="sonido" class="w-full bg-surface-container-low text-on-surface font-body-md text-body-md py-2.5 px-space-md rounded-lg cursor-pointer focus:outline-none focus:bg-surface-container-lowest">
+              <option value="LOCAL" th:selected="${prefs.sonido().name() == 'LOCAL'}">Escuchar en esta computadora</option>
+              <option value="SILENCIADO" th:selected="${prefs.sonido().name() == 'SILENCIADO'}">Silenciar</option>
+            </select>
+          </div>
+          <div class="flex items-center justify-between py-space-xs">
+            <div class="flex flex-col pr-space-md"><span class="font-body-md text-body-md font-medium text-on-surface">Compartir mi micrófono</span><span class="font-body-sm text-body-sm text-on-surface-variant">Envía el audio de tu micrófono al equipo remoto</span></div>
+            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+              <input type="checkbox" name="microfono" class="sr-only peer" th:checked="${prefs.microfono()}">
+              <div class="w-11 h-6 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-container-lowest after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+            </label>
+          </div>
+          <div class="flex flex-col gap-space-xs">
+            <label class="font-body-sm text-body-sm font-medium text-on-surface" for="atajos">Atajos de teclado de Windows</label>
+            <select id="atajos" name="atajos" class="w-full bg-surface-container-low text-on-surface font-body-md text-body-md py-2.5 px-space-md rounded-lg cursor-pointer focus:outline-none focus:bg-surface-container-lowest">
+              <option value="ESTA_PC" th:selected="${prefs.atajos().name() == 'ESTA_PC'}">En esta computadora</option>
+              <option value="EQUIPO_REMOTO" th:selected="${prefs.atajos().name() == 'EQUIPO_REMOTO'}">En el equipo remoto</option>
+              <option value="SOLO_PANTALLA_COMPLETA" th:selected="${prefs.atajos().name() == 'SOLO_PANTALLA_COMPLETA'}">Solo en pantalla completa</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calidad -->
+    <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+      <div class="flex items-center gap-space-sm pb-space-xs">
+        <div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary"><span class="material-symbols-outlined text-xl">speed</span></div>
+        <div><h2 class="font-headline-sm text-headline-sm text-on-surface">Calidad de conexión</h2><p class="font-body-sm text-body-sm text-on-surface-variant">Equilibrio entre fluidez y nitidez</p></div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-space-sm">
+        <label class="flex items-start p-space-md rounded-lg bg-surface-container-low cursor-pointer transition-all border-2 border-transparent has-[:checked]:border-primary-container has-[:checked]:bg-surface-container-lowest">
+          <input type="radio" name="calidad" value="EQUILIBRADA" class="mt-1" th:checked="${prefs.calidad().name() == 'EQUILIBRADA'}">
+          <div class="ml-space-md flex flex-col">
+            <div class="flex items-center gap-space-xs"><span class="font-body-md text-body-md font-semibold text-on-surface">Equilibrada</span><span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-primary-container text-on-primary-container font-semibold">Recomendada</span></div>
+            <span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Se adapta a tu conexión para dar buena fluidez.</span>
+          </div>
+        </label>
+        <label class="flex items-start p-space-md rounded-lg bg-surface-container-low cursor-pointer transition-all border-2 border-transparent has-[:checked]:border-primary-container has-[:checked]:bg-surface-container-lowest">
+          <input type="radio" name="calidad" value="RAPIDA" class="mt-1" th:checked="${prefs.calidad().name() == 'RAPIDA'}">
+          <div class="ml-space-md flex flex-col">
+            <span class="font-body-md text-body-md font-semibold text-on-surface">Rápida</span>
+            <span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Prioriza la velocidad. Ideal para redes lentas.</span>
+          </div>
+        </label>
+        <label class="flex items-start p-space-md rounded-lg bg-surface-container-low cursor-pointer transition-all border-2 border-transparent has-[:checked]:border-primary-container has-[:checked]:bg-surface-container-lowest">
+          <input type="radio" name="calidad" value="MAXIMA" class="mt-1" th:checked="${prefs.calidad().name() == 'MAXIMA'}">
+          <div class="ml-space-md flex flex-col">
+            <span class="font-body-md text-body-md font-semibold text-on-surface">Máxima calidad</span>
+            <span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Máximo detalle y color para tareas visuales.</span>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Acciones -->
+    <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-space-md">
+      <span class="font-label-sm text-label-sm text-on-surface-variant">Los cambios se aplican al iniciar una nueva conexión remota.</span>
+      <div class="flex items-center justify-end gap-space-sm">
+        <button type="reset" class="px-space-md py-2 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md font-medium transition-colors">Restablecer</button>
+        <button type="submit" class="inline-flex items-center gap-space-xs px-space-lg py-2.5 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md font-semibold shadow-sm transition-all">
+          <span class="material-symbols-outlined text-lg">save</span>Guardar preferencias
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+</body>
+</html>

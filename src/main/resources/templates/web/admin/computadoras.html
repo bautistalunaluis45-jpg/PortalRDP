@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: documento('Computadoras', 'computadoras', ~{::contenido})}">
+<body>
+<div th:fragment="contenido" class="flex flex-col w-full gap-space-lg">
+
+  <div th:if="${error}" class="flex items-center gap-space-sm bg-error-container text-on-error-container px-space-lg py-space-sm rounded-xl">
+    <span class="material-symbols-outlined text-[20px]">error</span><span class="font-body-sm text-body-sm" th:text="${error}">Error</span>
+  </div>
+  <div th:if="${exito}" class="flex items-center gap-space-sm bg-tertiary-container text-on-tertiary-container px-space-lg py-space-sm rounded-xl">
+    <span class="material-symbols-outlined text-[20px]">check_circle</span><span class="font-body-sm text-body-sm" th:text="${exito}">Listo</span>
+  </div>
+
+  <!-- Encabezado -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-space-md">
+    <div class="flex items-center gap-space-sm">
+      <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Computadoras</h1>
+      <span class="px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold"
+            th:text="|${resumen.total()} registradas|">0</span>
+    </div>
+    <a th:href="@{/web/admin/computadoras/nueva}"
+       class="inline-flex items-center gap-space-xs px-space-lg py-space-sm rounded-lg bg-primary-container text-on-primary hover:bg-primary font-label-md text-label-md font-semibold shadow-sm transition-all self-start md:self-auto">
+      <span class="material-symbols-outlined text-[18px]">add</span>Nueva computadora
+    </a>
+  </div>
+
+  <!-- Indicadores -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-space-md">
+    <div class="p-space-lg bg-surface-container-lowest rounded-xl shadow-sm flex items-center gap-space-md">
+      <div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[20px]">devices</span></div>
+      <div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Total</span><span class="font-data-metric text-data-metric text-on-surface font-semibold" th:text="${resumen.total()}">0</span></div>
+    </div>
+    <div class="p-space-lg bg-surface-container-lowest rounded-xl shadow-sm flex items-center gap-space-md">
+      <div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-tertiary"><span class="material-symbols-outlined text-[20px]">check_circle</span></div>
+      <div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Libres</span><span class="font-data-metric text-data-metric text-tertiary font-semibold" th:text="${resumen.libres()}">0</span></div>
+    </div>
+    <div class="p-space-lg bg-surface-container-lowest rounded-xl shadow-sm flex items-center gap-space-md">
+      <div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[20px]">lan</span></div>
+      <div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Ocupadas</span><span class="font-data-metric text-data-metric text-on-surface font-semibold" th:text="${resumen.ocupadas()}">0</span></div>
+    </div>
+    <div class="p-space-lg bg-surface-container-lowest rounded-xl shadow-sm flex items-center gap-space-md">
+      <div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-secondary"><span class="material-symbols-outlined text-[20px]">cloud_off</span></div>
+      <div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Sin conexión</span><span class="font-data-metric text-data-metric text-on-surface font-semibold" th:text="${resumen.sinConexion()}">0</span></div>
+    </div>
+  </div>
+
+  <!-- Aviso accionable: PCs sin contraseña (no se pueden lanzar) -->
+  <div th:if="${resumen.sinCredencial() > 0}" class="flex items-center gap-space-sm bg-error-container/50 text-on-error-container px-space-lg py-space-sm rounded-xl">
+    <span class="material-symbols-outlined text-[20px]">key_off</span>
+    <span class="font-body-sm text-body-sm" th:text="|${resumen.sinCredencial()} computadora(s) sin contraseña configurada: no se pueden lanzar hasta capturarla.|">Pendiente</span>
+  </div>
+
+  <!-- Tabla -->
+  <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col">
+    <div class="p-space-md flex flex-col sm:flex-row sm:items-center gap-space-md border-b border-surface-container">
+      <div class="relative flex-1 min-w-[220px]">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+        <input id="pc-search" type="text" placeholder="Buscar por nombre o dirección..."
+               class="w-full pl-9 pr-3 py-2 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline font-body-sm text-body-sm outline-none focus:bg-surface-container-lowest transition-all">
+      </div>
+      <select id="dept-filter" class="pl-3 pr-8 py-2 rounded-lg bg-surface-container-low text-on-surface font-label-md text-label-md outline-none cursor-pointer">
+        <option value="all">Todos los departamentos</option>
+      </select>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-surface-container-low/70 text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
+            <th class="py-space-md px-space-lg font-semibold">Computadora</th>
+            <th class="py-space-md px-space-md font-semibold">Departamento</th>
+            <th class="py-space-md px-space-md font-semibold">Estado</th>
+            <th class="py-space-md px-space-md font-semibold">En uso / inactividad</th>
+            <th class="py-space-md px-space-md font-semibold">Credencial</th>
+            <th class="py-space-md px-space-lg font-semibold text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="pc-tbody" class="divide-y divide-surface-container">
+          <tr th:if="${#lists.isEmpty(computadoras)}"><td colspan="6" class="py-space-xl px-space-lg text-center text-on-surface-variant">No hay computadoras. Agrega la primera con "Nueva computadora".</td></tr>
+          <tr th:each="c : ${computadoras}" class="pc-row hover:bg-surface-container-low/40 transition-colors"
+              th:classappend="${c.activa()} ? '' : 'opacity-60'"
+              th:data-name="${c.nombre()}" th:data-dir="${c.direccionTailscale()}" th:data-dept="${c.departamentoNombre()}">
+            <td class="py-space-md px-space-lg">
+              <div class="flex items-center gap-space-md">
+                <div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-primary shrink-0"><span class="material-symbols-outlined text-[20px]">desktop_windows</span></div>
+                <div class="flex flex-col min-w-0">
+                  <div class="flex items-center gap-space-xs">
+                    <span class="font-headline-sm text-body-md text-on-surface font-semibold" th:text="${c.nombre()}">PC</span>
+                    <span th:unless="${c.activa()}" class="px-1.5 rounded bg-surface-container-high text-on-surface-variant text-[10px] font-semibold uppercase">Inactiva</span>
+                  </div>
+                  <span class="font-body-sm text-[12px] font-mono text-on-surface-variant" th:text="${c.direccionTailscale()}">100.x</span>
+                </div>
+              </div>
+            </td>
+            <td class="py-space-md px-space-md">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface-variant font-label-md text-label-md font-medium" th:text="${c.departamentoNombre()}">Depto</span>
+            </td>
+            <td class="py-space-md px-space-md">
+              <span th:if="${c.esLibre()}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-tertiary/10 text-tertiary font-label-sm text-label-sm font-semibold"><span class="w-2 h-2 rounded-full bg-tertiary"></span>Libre</span>
+              <span th:if="${c.esOcupada()}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm font-semibold"><span class="w-2 h-2 rounded-full bg-primary"></span>Ocupada</span>
+              <span th:if="${c.esSinConexion()}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-high text-secondary font-label-sm text-label-sm font-semibold"><span class="w-2 h-2 rounded-full bg-outline"></span>Sin conexión</span>
+            </td>
+            <td class="py-space-md px-space-md">
+              <div th:if="${c.esOcupada()}" class="flex flex-col">
+                <span class="font-body-sm text-body-sm text-on-surface font-medium" th:text="${c.usuarioEnUso()}">usuario</span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant" th:text="${c.idleTexto()}">idle</span>
+              </div>
+              <span th:if="${c.esLibre()}" class="font-body-sm text-body-sm text-on-surface-variant">Disponible</span>
+              <span th:if="${c.esSinConexion()}" class="font-body-sm text-body-sm text-on-surface-variant" th:text="|Sin reporte · ${c.ultimoLatidoTexto()}|">Sin reporte</span>
+            </td>
+            <td class="py-space-md px-space-md">
+              <span th:if="${c.credencialConfigurada()}" class="inline-flex items-center gap-1 text-tertiary font-label-sm text-label-sm font-semibold"><span class="material-symbols-outlined text-[16px]">key</span>Configurada</span>
+              <span th:unless="${c.credencialConfigurada()}" class="inline-flex items-center gap-1 text-error font-label-sm text-label-sm font-semibold"><span class="material-symbols-outlined text-[16px]">key_off</span>Pendiente</span>
+            </td>
+            <td class="py-space-md px-space-lg text-right">
+              <div class="flex items-center justify-end gap-space-xs">
+                <!-- Operación -->
+                <form th:if="${c.esLibre()}" method="post" th:action="@{/web/admin/computadoras/{id}/conectar(id=${c.id()})}">
+                  <button type="submit" class="inline-flex items-center gap-1 px-space-sm py-1 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md font-semibold hover:bg-primary transition-colors"><span class="material-symbols-outlined text-[16px]">cast</span>Conectar</button>
+                </form>
+                <form th:if="${c.esOcupada()}" method="post" th:action="@{/web/admin/computadoras/{id}/shadow(id=${c.id()})}">
+                  <button type="submit" class="inline-flex items-center gap-1 px-space-sm py-1 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md font-medium transition-colors"><span class="material-symbols-outlined text-[16px]">visibility</span>Shadow</button>
+                </form>
+                <form th:if="${c.esOcupada()}" method="post" th:action="@{/web/admin/computadoras/{id}/desconectar(id=${c.id()})}"
+                      onsubmit="return confirm('¿Desconectar al usuario de esta PC? (la sesión no se cierra)');">
+                  <button type="submit" class="inline-flex items-center gap-1 px-space-sm py-1 rounded-lg text-error hover:bg-error-container hover:text-on-error-container font-label-md text-label-md font-semibold transition-colors"><span class="material-symbols-outlined text-[16px]">logout</span>Desconectar</button>
+                </form>
+                <!-- Configuración -->
+                <a th:href="@{/web/admin/computadoras/{id}(id=${c.id()})}" class="inline-flex items-center gap-1 px-space-sm py-1 rounded-lg text-primary hover:bg-surface-container font-label-md text-label-md font-medium transition-colors">
+                  <span class="material-symbols-outlined text-[16px]">edit</span>Editar
+                </a>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="pc-none" class="hidden p-space-xl text-center text-on-surface-variant font-body-sm">No hay computadoras con esos filtros.</div>
+  </div>
+
+  <script th:inline="none">
+    (function () {
+      const search = document.getElementById('pc-search');
+      const deptFilter = document.getElementById('dept-filter');
+      const rows = Array.from(document.querySelectorAll('.pc-row'));
+      const none = document.getElementById('pc-none');
+      [...new Set(rows.map(r => r.dataset.dept))].sort().forEach(d => {
+        const o = document.createElement('option'); o.value = d; o.textContent = d; deptFilter.appendChild(o);
+      });
+      function apply() {
+        const q = search.value.toLowerCase().trim(), d = deptFilter.value;
+        let vis = 0;
+        rows.forEach(r => {
+          const ok = (r.dataset.name.toLowerCase().includes(q) || r.dataset.dir.toLowerCase().includes(q)) && (d === 'all' || r.dataset.dept === d);
+          r.style.display = ok ? '' : 'none'; if (ok) vis++;
+        });
+        none.classList.toggle('hidden', vis !== 0);
+      }
+      search.addEventListener('input', apply);
+      deptFilter.addEventListener('change', apply);
+    })();
+  </script>
+</div>
+</body>
+</html>

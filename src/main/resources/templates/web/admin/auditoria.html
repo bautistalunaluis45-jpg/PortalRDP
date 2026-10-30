@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: documento('Auditoría', 'auditoria', ~{::contenido})}">
+<body>
+<div th:fragment="contenido" class="flex flex-col w-full gap-space-lg">
+
+  <!-- Encabezado -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-md">
+    <div class="flex items-center gap-space-md">
+      <div class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-primary shadow-sm"><span class="material-symbols-outlined text-[24px]">policy</span></div>
+      <div class="flex flex-col">
+        <div class="flex items-center gap-space-sm">
+          <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Auditoría</h1>
+          <span class="px-space-sm py-0.5 rounded-full bg-surface-container text-secondary font-label-sm text-label-sm font-semibold">Registro inmutable</span>
+        </div>
+        <span class="font-label-md text-label-md text-on-surface-variant">Trazabilidad de acciones del portal. Solo lectura.</span>
+      </div>
+    </div>
+    <a th:href="@{/web/admin/auditoria/export(q=${fq},computadoraId=${fComputadoraId},tipo=${fTipo},rango=${fRango},desde=${fDesde},hasta=${fHasta})}"
+       class="inline-flex items-center gap-space-xs px-space-md py-space-sm rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container transition-all shadow-sm font-label-md text-label-md font-semibold self-start sm:self-auto">
+      <span class="material-symbols-outlined text-[18px] text-primary">download</span>Exportar CSV
+    </a>
+  </div>
+
+  <!-- Indicadores -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-space-md">
+    <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex items-center justify-between">
+      <div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Eventos (total)</span><span class="font-data-metric text-data-metric text-on-surface mt-0.5" th:text="${resumen.total()}">0</span></div>
+      <div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[20px]">history</span></div>
+    </div>
+    <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex items-center justify-between">
+      <div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Hoy</span><span class="font-data-metric text-data-metric text-on-surface mt-0.5" th:text="${resumen.hoy()}">0</span></div>
+      <div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-tertiary"><span class="material-symbols-outlined text-[20px]">today</span></div>
+    </div>
+    <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex items-center justify-between">
+      <div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Entradas al portal</span><span class="font-data-metric text-data-metric text-on-surface mt-0.5" th:text="${resumen.entradas()}">0</span></div>
+      <div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[20px]">login</span></div>
+    </div>
+    <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex items-center justify-between">
+      <div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Accesos revocados</span><span class="font-data-metric text-data-metric text-on-surface mt-0.5" th:text="${resumen.revocaciones()}">0</span></div>
+      <div class="w-10 h-10 rounded-lg bg-error-container/40 flex items-center justify-center text-error"><span class="material-symbols-outlined text-[20px]">block</span></div>
+    </div>
+  </div>
+
+  <!-- Filtros (GET) -->
+  <form method="get" th:action="@{/web/admin/auditoria}" class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-space-sm items-end">
+    <div class="lg:col-span-3 flex flex-col gap-1">
+      <label class="font-label-sm text-label-sm text-on-surface-variant" for="q">Actor (correo)</label>
+      <input id="q" name="q" type="text" th:value="${fq}" placeholder="correo del actor..."
+             class="w-full px-space-md py-space-xs rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline font-body-sm text-body-sm outline-none focus:bg-surface-container-lowest">
+    </div>
+    <div class="lg:col-span-3 flex flex-col gap-1">
+      <label class="font-label-sm text-label-sm text-on-surface-variant" for="computadoraId">Computadora</label>
+      <select id="computadoraId" name="computadoraId" class="w-full px-space-md py-space-xs rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm outline-none cursor-pointer">
+        <option value="">Todas</option>
+        <option th:each="c : ${computadoras}" th:value="${c.id()}" th:text="${c.nombre()}" th:selected="${fComputadoraId != null and fComputadoraId == c.id()}">PC</option>
+      </select>
+    </div>
+    <div class="lg:col-span-3 flex flex-col gap-1">
+      <label class="font-label-sm text-label-sm text-on-surface-variant" for="tipo">Tipo de evento</label>
+      <select id="tipo" name="tipo" class="w-full px-space-md py-space-xs rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm outline-none cursor-pointer">
+        <option value="">Todos</option>
+        <option th:each="t : ${tipos}" th:value="${t.key}" th:text="${t.value}" th:selected="${fTipo == t.key}">Tipo</option>
+      </select>
+    </div>
+    <div class="lg:col-span-2 flex flex-col gap-1">
+      <label class="font-label-sm text-label-sm text-on-surface-variant" for="rango">Rango</label>
+      <select id="rango" name="rango" class="w-full px-space-md py-space-xs rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm outline-none cursor-pointer">
+        <option value="24h" th:selected="${fRango == '24h'}">Últimas 24 h</option>
+        <option value="7d" th:selected="${fRango == '7d'}">Últimos 7 días</option>
+        <option value="30d" th:selected="${fRango == '30d'}">Últimos 30 días</option>
+        <option value="todo" th:selected="${fRango == 'todo'}">Todo</option>
+        <option value="custom" th:selected="${fRango == 'custom'}">Personalizado…</option>
+      </select>
+    </div>
+    <!-- Rango personalizado (visible solo con "Personalizado") -->
+    <div id="rango-custom" th:classappend="${fRango == 'custom'} ? '' : 'hidden'"
+         class="lg:col-span-12 grid grid-cols-1 sm:grid-cols-2 gap-space-sm">
+      <div class="flex flex-col gap-1">
+        <label class="font-label-sm text-label-sm text-on-surface-variant" for="desde">Desde</label>
+        <input id="desde" name="desde" type="date" th:value="${fDesde}"
+               class="w-full px-space-md py-space-xs rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm outline-none focus:bg-surface-container-lowest">
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="font-label-sm text-label-sm text-on-surface-variant" for="hasta">Hasta</label>
+        <input id="hasta" name="hasta" type="date" th:value="${fHasta}"
+               class="w-full px-space-md py-space-xs rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm outline-none focus:bg-surface-container-lowest">
+      </div>
+    </div>
+    <div class="lg:col-span-1 flex items-center gap-space-xs">
+      <button type="submit" class="flex-1 h-9 px-space-sm rounded-lg bg-primary-container text-on-primary font-label-md text-label-md font-semibold hover:bg-primary transition-colors">Filtrar</button>
+      <a th:href="@{/web/admin/auditoria}" class="h-9 px-space-sm flex items-center rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" title="Limpiar"><span class="material-symbols-outlined text-[18px]">filter_alt_off</span></a>
+    </div>
+  </form>
+
+  <!-- Tabla -->
+  <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left font-body-sm text-body-sm">
+        <thead>
+          <tr class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm tracking-wider uppercase">
+            <th class="py-space-sm px-space-md font-semibold whitespace-nowrap">Fecha y hora</th>
+            <th class="py-space-sm px-space-md font-semibold">Actor</th>
+            <th class="py-space-sm px-space-md font-semibold">Computadora</th>
+            <th class="py-space-sm px-space-md font-semibold">Evento</th>
+            <th class="py-space-sm px-space-md font-semibold">Detalle</th>
+            <th class="py-space-sm px-space-md font-semibold text-right whitespace-nowrap">IP</th>
+          </tr>
+        </thead>
+        <tbody class="text-on-surface">
+          <tr th:if="${#lists.isEmpty(resultado.filas())}"><td colspan="6" class="py-space-xl px-space-md text-center text-on-surface-variant">No hay eventos con esos filtros.</td></tr>
+          <tr th:each="f : ${resultado.filas()}" class="hover:bg-surface-container-low/50 transition-colors border-t border-outline-variant/30" th:with="c=${f.color()}">
+            <td class="py-space-sm px-space-md font-label-sm text-label-sm whitespace-nowrap text-on-surface-variant" th:text="${f.fecha()}">fecha</td>
+            <td class="py-space-sm px-space-md whitespace-nowrap font-label-md text-label-md text-on-surface" th:text="${f.actor()}">actor</td>
+            <td class="py-space-sm px-space-md whitespace-nowrap font-label-md text-label-md text-on-surface" th:text="${f.computadora()}">PC</td>
+            <td class="py-space-sm px-space-md whitespace-nowrap">
+              <span class="inline-flex items-center gap-1.5 font-label-sm text-label-sm"
+                    th:classappend="${c=='primary'?'text-primary':(c=='tertiary'?'text-tertiary':(c=='error'?'text-error':(c=='secondary'?'text-secondary':'text-on-surface-variant')))}">
+                <span class="w-1.5 h-1.5 rounded-full shrink-0"
+                      th:classappend="${c=='primary'?'bg-primary':(c=='tertiary'?'bg-tertiary':(c=='error'?'bg-error':(c=='secondary'?'bg-secondary':'bg-outline')))}"></span>
+                <span th:text="${f.tipoEtiqueta()}">Evento</span>
+              </span>
+            </td>
+            <td class="py-space-sm px-space-md max-w-md"><span class="font-body-sm text-body-sm text-on-surface" th:text="${f.detalle()}">detalle</span></td>
+            <td class="py-space-sm px-space-md whitespace-nowrap text-right font-label-sm text-label-sm text-on-surface-variant" th:text="${f.ip()}">ip</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- Paginación -->
+    <div class="px-space-lg py-space-md bg-surface-container-lowest flex flex-col sm:flex-row items-center justify-between gap-space-md border-t border-outline-variant/30">
+      <div class="font-body-sm text-body-sm text-on-surface-variant">
+        <span th:text="|${resultado.totalEventos()} eventos · página ${resultado.paginaHumana()} de ${resultado.totalPaginas() == 0 ? 1 : resultado.totalPaginas()}|">0</span>
+      </div>
+      <div class="flex items-center gap-space-xs">
+        <a th:if="${resultado.hayAnterior()}" th:href="@{/web/admin/auditoria(q=${fq},computadoraId=${fComputadoraId},tipo=${fTipo},rango=${fRango},desde=${fDesde},hasta=${fHasta},pagina=${resultado.pagina()-1})}"
+           class="h-8 px-space-sm flex items-center rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors"><span class="material-symbols-outlined text-[18px]">chevron_left</span>Anterior</a>
+        <span th:unless="${resultado.hayAnterior()}" class="h-8 px-space-sm flex items-center rounded-lg bg-surface-container-low text-on-surface-variant/50 font-label-md text-label-md"><span class="material-symbols-outlined text-[18px]">chevron_left</span>Anterior</span>
+        <a th:if="${resultado.haySiguiente()}" th:href="@{/web/admin/auditoria(q=${fq},computadoraId=${fComputadoraId},tipo=${fTipo},rango=${fRango},desde=${fDesde},hasta=${fHasta},pagina=${resultado.pagina()+1})}"
+           class="h-8 px-space-sm flex items-center rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors">Siguiente<span class="material-symbols-outlined text-[18px]">chevron_right</span></a>
+        <span th:unless="${resultado.haySiguiente()}" class="h-8 px-space-sm flex items-center rounded-lg bg-surface-container-low text-on-surface-variant/50 font-label-md text-label-md">Siguiente<span class="material-symbols-outlined text-[18px]">chevron_right</span></span>
+      </div>
+    </div>
+  </div>
+
+  <script th:inline="none">
+    (function () {
+      const rango = document.getElementById('rango');
+      const custom = document.getElementById('rango-custom');
+      if (!rango || !custom) return;
+      const sync = () => custom.classList.toggle('hidden', rango.value !== 'custom');
+      rango.addEventListener('change', sync);
+      sync();
+    })();
+  </script>
+</div>
+</body>
+</html>
