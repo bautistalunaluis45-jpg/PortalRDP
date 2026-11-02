@@ -1,0 +1,2 @@
+/src/agente/PortalRdpAgente/bin/Release/net10.0-windows/win-x64/publish/PortalRdpAgente.pdb
+/src/agente/PortalRdpAgente/bin/Release/net10.0-windows/win-x64/publish/PortalRdpAgente.exe

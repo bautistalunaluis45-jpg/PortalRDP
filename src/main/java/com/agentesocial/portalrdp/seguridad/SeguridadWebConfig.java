@@ -20,13 +20,15 @@ public class SeguridadWebConfig {
     SecurityFilterChain cadenaWeb(HttpSecurity http, OidcUsuarioService oidcUsuarioService) throws Exception {
         http
                 .authorizeHttpRequests(reglas -> reglas
-                        .requestMatchers("/css/**", "/js/**", "/favicon.ico", "/error").permitAll()
+                        .requestMatchers("/login", "/css/**", "/js/**", "/favicon.ico", "/error").permitAll()
                         .requestMatchers("/web/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/web/manager/**", "/web/resumen").hasAnyRole("MANAGER", "ADMIN")
                         .anyRequest().authenticated())
                 .oauth2Login(login -> login
+                        .loginPage("/login")
                         .userInfoEndpoint(info -> info.oidcUserService(oidcUsuarioService))
                         .defaultSuccessUrl("/web/", true))
-                .logout(logout -> logout.logoutSuccessUrl("/"));
+                .logout(logout -> logout.logoutSuccessUrl("/login?salida"));
         return http.build();
     }
 }

@@ -3,17 +3,24 @@ using System.Text.Json;
 
 namespace PortalRdpAgente;
 
-/// <summary>Envía el latido al portal: POST {PortalUrl}/api/agente/latido con el token por PC.</summary>
+/// <summary>
+/// Cliente del portal. Envía el latido (y recibe las órdenes pendientes) y reporta
+/// el resultado de cada orden ejecutada. Siempre saliente hacia el portal.
+/// </summary>
 internal sealed class PortalCliente
 {
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(15) };
+    private static readonly JsonSerializerOptions JsonOpts = new() { PropertyNameCaseInsensitive = true };
 
     private readonly Configuracion _cfg;
 
     public PortalCliente(Configuracion cfg) => _cfg = cfg;
 
-    /// <summary>Devuelve true si el portal aceptó el latido (HTTP 2xx).</summary>
-    public async Task<bool> EnviarLatidoAsync(IReadOnlyList<SesionReporte> sesiones, CancellationToken ct)
+    /// <summary>
+    /// Envía el latido y devuelve la respuesta del portal (con las órdenes pendientes),
+    /// o null si el portal no aceptó el latido.
+    /// </summary>
+    public async Task<LatidoRespuesta?> EnviarLatidoAsync(IReadOnlyList<SesionReporte> sesiones, CancellationToken ct)
     {
         var cuerpo = new
         {
@@ -33,6 +40,23 @@ internal sealed class PortalCliente
         req.Content = new StringContent(JsonSerializer.Serialize(cuerpo), Encoding.UTF8, "application/json");
 
         using var resp = await Http.SendAsync(req, ct);
-        return resp.IsSuccessStatusCode;
+        if (!resp.IsSuccessStatusCode)
+        {
+            return null;
+        }
+        var json = await resp.Content.ReadAsStringAsync(ct);
+        return JsonSerializer.Deserialize<LatidoRespuesta>(json, JsonOpts);
+    }
+
+    /// <summary>Reporta al portal el resultado de una orden ejecutada.</summary>
+    public async Task EnviarResultadoOrdenAsync(long ordenId, bool ok, string detalle, CancellationToken ct)
+    {
+        var url = _cfg.PortalUrl.TrimEnd('/') + "/api/agente/ordenes/" + ordenId + "/resultado";
+        using var req = new HttpRequestMessage(HttpMethod.Post, url);
+        req.Headers.Add("X-Agent-Token", _cfg.Token);
+        var cuerpo = new { ok, detalle };
+        req.Content = new StringContent(JsonSerializer.Serialize(cuerpo), Encoding.UTF8, "application/json");
+        using var resp = await Http.SendAsync(req, ct);
+        _ = resp; // mejor esfuerzo: si el acuse falla, se reintenta en el próximo ciclo
     }
 }

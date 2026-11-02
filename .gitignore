@@ -36,3 +36,6 @@ build/
 
 ### VS Code ###
 .vscode/
+helper/**/bin/
+helper/**/obj/
+helper-publicado/

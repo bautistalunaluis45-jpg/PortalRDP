@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: documento('Ayuda', 'ayuda', ~{::contenido})}">
+<body>
+<div th:fragment="contenido" class="max-w-3xl w-full mx-auto flex flex-col gap-space-lg">
+
+  <div class="flex flex-col gap-space-xs">
+    <div class="flex items-center gap-space-xs text-primary font-label-sm text-label-sm tracking-wider uppercase">
+      <span class="material-symbols-outlined text-[18px]">help</span><span>Ayuda</span>
+    </div>
+    <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Instalar PulseDesk</h1>
+    <p class="font-body-md text-body-md text-on-surface-variant">
+      PulseDesk (el <em>helper</em>) es el pequeño programa que abre la sesión remota en tu equipo
+      cuando pulsas <strong>Conectar</strong> o <strong>Shadow</strong>. Se instala una sola vez por usuario,
+      sin permisos de administrador.
+    </p>
+  </div>
+
+  <!-- Tarjeta de descarga -->
+  <div class="bg-surface-container-lowest rounded-xl p-space-xl shadow-sm flex flex-col sm:flex-row sm:items-center gap-space-lg">
+    <div class="w-14 h-14 rounded-xl bg-primary-fixed flex items-center justify-center text-primary shrink-0">
+      <span class="material-symbols-outlined text-[28px]">download</span>
+    </div>
+    <div class="flex flex-col gap-space-xs flex-1">
+      <h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold">PulseDesk (helper) para Windows</h2>
+      <p class="font-body-sm text-body-sm text-on-surface-variant">Ejecutable para Windows (64 bits). No requiere instalar nada más.</p>
+    </div>
+    <a th:if="${helperDisponible}" th:href="@{/web/helper/descargar}"
+       class="inline-flex items-center justify-center gap-space-xs px-space-lg py-space-sm rounded-lg bg-primary-container text-on-primary hover:bg-primary font-label-md text-label-md font-semibold shadow-sm transition-all">
+      <span class="material-symbols-outlined text-[18px]">download</span>Descargar
+    </a>
+    <span th:unless="${helperDisponible}"
+          class="inline-flex items-center gap-space-xs px-space-md py-space-sm rounded-lg bg-surface-container-high text-on-surface-variant font-label-md text-label-md font-medium">
+      <span class="material-symbols-outlined text-[18px]">hourglass_empty</span>Aún no disponible
+    </span>
+  </div>
+
+  <!-- Pasos -->
+  <div class="bg-surface-container-lowest rounded-xl p-space-xl shadow-sm flex flex-col gap-space-md">
+    <h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Cómo instalarlo</h2>
+    <ol class="flex flex-col gap-space-md">
+      <li class="flex gap-space-md">
+        <span class="w-6 h-6 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-sm text-label-sm font-bold shrink-0">1</span>
+        <p class="font-body-md text-body-md text-on-surface-variant">Descarga el ejecutable y ábrelo. La primera vez Windows puede avisar
+          (<span class="font-medium text-on-surface">Más información → Ejecutar de todas formas</span>).</p>
+      </li>
+      <li class="flex gap-space-md">
+        <span class="w-6 h-6 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-sm text-label-sm font-bold shrink-0">2</span>
+        <p class="font-body-md text-body-md text-on-surface-variant">Cuando lo pida, pega la dirección del portal:
+          <span class="font-mono text-body-sm bg-surface-container-low px-1.5 py-0.5 rounded">https://serverhcpi.tailb40f15.ts.net</span></p>
+      </li>
+      <li class="flex gap-space-md">
+        <span class="w-6 h-6 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-sm text-label-sm font-bold shrink-0">3</span>
+        <p class="font-body-md text-body-md text-on-surface-variant">Listo. Vuelve al portal y pulsa <strong class="text-on-surface">Conectar</strong>:
+          se abrirá la sesión remota automáticamente.</p>
+      </li>
+    </ol>
+    <div class="flex items-start gap-space-sm bg-surface-container-low rounded-lg p-space-md text-on-surface-variant">
+      <span class="material-symbols-outlined text-[18px] text-primary">lan</span>
+      <p class="font-body-sm text-body-sm">Tu equipo debe estar conectado a la red de la empresa (Tailscale) para que el portal y las PCs sean accesibles.</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

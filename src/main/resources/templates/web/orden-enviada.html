@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: documento('Desconectar', 'computadoras', ~{::contenido})}">
+<body>
+<div th:fragment="contenido" class="max-w-xl w-full mx-auto">
+
+  <!-- No se pudo encolar (p. ej. ya no hay sesión activa) -->
+  <div th:if="${error}" class="bg-surface-container-lowest rounded-xl p-space-xl shadow-sm flex flex-col items-center text-center gap-space-md">
+    <div class="w-14 h-14 rounded-full bg-error-container flex items-center justify-center text-on-error-container"><span class="material-symbols-outlined text-[28px]">block</span></div>
+    <h1 class="font-headline-md text-headline-md text-on-surface">No se pudo desconectar</h1>
+    <p class="font-body-md text-body-md text-on-surface-variant" th:text="${error}">Motivo</p>
+    <div th:insert="~{:: volver}"></div>
+  </div>
+
+  <!-- Orden encolada: el agente la ejecutará en su próximo latido -->
+  <div th:if="${orden}" class="bg-surface-container-lowest rounded-xl p-space-xl shadow-sm flex flex-col items-center text-center gap-space-md">
+    <div class="w-14 h-14 rounded-full bg-primary-fixed flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[28px]">send</span></div>
+    <h1 class="font-headline-md text-headline-md text-on-surface">Orden enviada</h1>
+    <p class="font-body-md text-body-md text-on-surface-variant">
+      Se pedirá desconectar a <strong class="text-on-surface" th:text="${orden.usuario()}">usuario</strong>
+      en <strong class="text-on-surface" th:text="${orden.computadoraNombre()}">PC</strong>.
+      El agente de la PC la ejecutará en su próximo latido. La sesión no se cierra: queda desconectada.
+    </p>
+    <div th:insert="~{:: volver}"></div>
+  </div>
+
+  <div th:fragment="volver" class="pt-space-md">
+    <a th:if="${usuario.rol.name() == 'MANAGER'}" th:href="@{/web/manager/computadoras}" class="inline-flex items-center gap-space-xs font-label-md text-label-md text-on-surface-variant hover:text-on-surface">
+      <span class="material-symbols-outlined text-[16px]">arrow_back</span>Volver a computadoras
+    </a>
+    <a th:if="${usuario.rol.name() == 'ADMIN'}" th:href="@{/web/admin/computadoras}" class="inline-flex items-center gap-space-xs font-label-md text-label-md text-on-surface-variant hover:text-on-surface">
+      <span class="material-symbols-outlined text-[16px]">arrow_back</span>Volver a computadoras
+    </a>
+  </div>
+</div>
+</body>
+</html>

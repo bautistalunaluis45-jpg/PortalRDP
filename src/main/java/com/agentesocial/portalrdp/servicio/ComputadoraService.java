@@ -41,14 +41,15 @@ public class ComputadoraService {
                               Clock reloj,
                               PropiedadesEstado propiedadesEstado,
                               AuditoriaService auditoriaService,
-                              com.agentesocial.portalrdp.repositorio.SesionRdpRepository sesionRdpRepository) {
+                              com.agentesocial.portalrdp.repositorio.SesionRdpRepository sesionRdpRepository,
+                              com.agentesocial.portalrdp.repositorio.UsuarioRepository usuarioRepository) {
         this.computadoraRepository = computadoraRepository;
         this.departamentoRepository = departamentoRepository;
         this.cifrador = cifrador;
         this.reloj = reloj;
         this.propiedadesEstado = propiedadesEstado;
         this.auditoriaService = auditoriaService;
-        this.sesiones = new SesionActivaConsulta(sesionRdpRepository);
+        this.sesiones = new SesionActivaConsulta(sesionRdpRepository, usuarioRepository);
     }
 
     @Transactional(readOnly = true)
@@ -66,7 +67,7 @@ public class ComputadoraService {
             vistas.add(new ComputadoraAdminVista(
                     c.getId(), c.getNombre(), c.getDireccionTailscale(), c.getDepartamento().getNombre(),
                     est,
-                    ocupada ? SesionActivaConsulta.nombreEnUso(sesion) : null,
+                    ocupada ? sesiones.nombreMostrado(sesion) : null,
                     ocupada ? idleTexto(sesion.getIdleSegundos()) : null,
                     textoLatido(c.getUltimoLatido(), ahora),
                     c.getCredencialCifrada() != null, c.isActiva()));

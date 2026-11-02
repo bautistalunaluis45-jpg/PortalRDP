@@ -10,7 +10,8 @@
       <span th:text="${accion}">Acción</span> sobre <strong class="text-on-surface" th:text="${computadora}">PC</strong>:
       <span th:text="${detalle}">detalle</span>
     </p>
-    <a th:href="@{/web/admin/computadoras}" class="inline-flex items-center gap-space-xs px-space-lg py-space-sm rounded-lg bg-primary-container text-on-primary hover:bg-primary font-label-md text-label-md font-semibold transition-all">
+    <a th:href="${usuario != null and usuario.rol.name() == 'MANAGER'} ? @{/web/manager/computadoras} : @{/web/admin/computadoras}"
+       class="inline-flex items-center gap-space-xs px-space-lg py-space-sm rounded-lg bg-primary-container text-on-primary hover:bg-primary font-label-md text-label-md font-semibold transition-all">
       <span class="material-symbols-outlined text-[18px]">arrow_back</span>Volver a computadoras
     </a>
   </div>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: documento('Lanzar', 'computadoras', ~{::contenido})}">
+<body>
+<div th:fragment="contenido" class="max-w-xl w-full mx-auto">
+
+  <!-- Rechazo (ya quedó auditado) -->
+  <div th:if="${!emision.exito()}" class="bg-surface-container-lowest rounded-xl p-space-xl shadow-sm flex flex-col items-center text-center gap-space-md">
+    <div class="w-14 h-14 rounded-full bg-error-container flex items-center justify-center text-on-error-container"><span class="material-symbols-outlined text-[28px]">block</span></div>
+    <h1 class="font-headline-md text-headline-md text-on-surface">No se pudo lanzar</h1>
+    <p class="font-body-md text-body-md text-on-surface-variant" th:text="${emision.mensaje()}">Motivo</p>
+    <div th:insert="~{:: volver}"></div>
+  </div>
+
+  <!-- Emitido: abrir el helper por el protocolo propio -->
+  <div th:if="${emision.exito()}" id="lanzador" th:data-url="${emision.urlProtocolo()}"
+       class="bg-surface-container-lowest rounded-xl p-space-xl shadow-sm flex flex-col items-center text-center gap-space-md">
+    <div class="w-14 h-14 rounded-full bg-primary-fixed flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[28px]">rocket_launch</span></div>
+    <h1 class="font-headline-md text-headline-md text-on-surface"
+        th:text="${emision.tipo().name() == 'SHADOW'} ? 'Abriendo supervisión…' : 'Abriendo conexión…'">Abriendo…</h1>
+    <p class="font-body-md text-body-md text-on-surface-variant">
+      <span th:text="${emision.tipo().name() == 'SHADOW'} ? 'Supervisando' : 'Conectando a'">Conectando a</span>
+      <strong class="text-on-surface" th:text="${emision.computadoraNombre()}">PC</strong>.
+      Tu equipo abrirá <strong>PulseDesk</strong> (el helper) para iniciar la sesión.
+    </p>
+
+    <a id="abrir" th:href="${emision.urlProtocolo()}"
+       class="inline-flex items-center gap-space-xs px-space-lg py-space-sm rounded-lg bg-primary-container text-on-primary hover:bg-primary font-label-md text-label-md font-semibold transition-all">
+      <span class="material-symbols-outlined text-[18px]">open_in_new</span>Abrir PulseDesk
+    </a>
+
+    <p class="font-label-md text-label-md text-on-surface-variant">
+      Este enlace es de un solo uso y vence en
+      <strong th:text="${emision.vigenciaSegundos()}">60</strong> segundos.
+    </p>
+
+    <div class="w-full pt-space-md mt-space-xs border-t border-outline-variant/30 flex flex-col gap-space-xs text-on-surface-variant">
+      <p class="font-label-md text-label-md">¿No se abrió nada? Instala el helper (una sola vez, sin administrador):</p>
+      <a th:href="@{/web/helper/descargar}" class="inline-flex items-center gap-space-xs font-label-md text-label-md text-primary hover:underline">
+        <span class="material-symbols-outlined text-[16px]">download</span>Descargar PulseDesk (helper)
+      </a>
+    </div>
+
+    <div th:insert="~{:: volver}"></div>
+  </div>
+
+  <!-- Enlace de regreso según rol -->
+  <div th:fragment="volver" class="pt-space-md">
+    <a th:if="${usuario.rol.name() == 'EMPLEADO'}" th:href="@{/web/mis-computadoras}" class="inline-flex items-center gap-space-xs font-label-md text-label-md text-on-surface-variant hover:text-on-surface">
+      <span class="material-symbols-outlined text-[16px]">arrow_back</span>Volver a mis computadoras
+    </a>
+    <a th:if="${usuario.rol.name() == 'MANAGER'}" th:href="@{/web/manager/computadoras}" class="inline-flex items-center gap-space-xs font-label-md text-label-md text-on-surface-variant hover:text-on-surface">
+      <span class="material-symbols-outlined text-[16px]">arrow_back</span>Volver a computadoras
+    </a>
+    <a th:if="${usuario.rol.name() == 'ADMIN'}" th:href="@{/web/admin/computadoras}" class="inline-flex items-center gap-space-xs font-label-md text-label-md text-on-surface-variant hover:text-on-surface">
+      <span class="material-symbols-outlined text-[16px]">arrow_back</span>Volver a computadoras
+    </a>
+  </div>
+
+  <script th:inline="none">
+    (function () {
+      var n = document.getElementById('lanzador');
+      if (n && n.dataset.url) {
+        // Abre el protocolo propio del helper (pulsedesk://…). El navegador pedirá
+        // permiso la primera vez. Si no hay helper instalado, no pasa nada: queda el botón.
+        window.location.href = n.dataset.url;
+      }
+    })();
+  </script>
+</div>
+</body>
+</html>

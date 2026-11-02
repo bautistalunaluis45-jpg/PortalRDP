@@ -104,6 +104,47 @@ public class AuditoriaService {
                 .construir());
     }
 
+    /** Lanzamiento de RDP (incluye rechazos y fallos, por eso lleva el resultado en el detalle). */
+    @Transactional
+    public void lanzamientoRdp(Long actorId, String actorCorreo, Long computadoraId, String ipOrigen, String detalle) {
+        registrar(EventoAuditoria.de(TipoEventoAuditoria.LANZAMIENTO_RDP, reloj.instant())
+                .actor(actorId, actorCorreo)
+                .computadora(computadoraId)
+                .ipOrigen(ipOrigen)
+                .detalle(detalle)
+                .construir());
+    }
+
+    /** Supervisión (shadow) de una sesión. */
+    @Transactional
+    public void shadow(Long actorId, String actorCorreo, Long computadoraId, String detalle) {
+        registrar(EventoAuditoria.de(TipoEventoAuditoria.SHADOW, reloj.instant())
+                .actor(actorId, actorCorreo)
+                .computadora(computadoraId)
+                .detalle(detalle)
+                .construir());
+    }
+
+    /** Expulsión: un manager/admin se conecta a una PC ocupada y saca al usuario anterior. */
+    @Transactional
+    public void expulsion(Long actorId, String actorCorreo, Long computadoraId, String detalle) {
+        registrar(EventoAuditoria.de(TipoEventoAuditoria.EXPULSION, reloj.instant())
+                .actor(actorId, actorCorreo)
+                .computadora(computadoraId)
+                .detalle(detalle)
+                .construir());
+    }
+
+    /** Orden de desconectar a un usuario (sin cerrar su sesión). */
+    @Transactional
+    public void desconectar(Long actorId, String actorCorreo, Long computadoraId, String detalle) {
+        registrar(EventoAuditoria.de(TipoEventoAuditoria.DESCONECTAR, reloj.instant())
+                .actor(actorId, actorCorreo)
+                .computadora(computadoraId)
+                .detalle(detalle)
+                .construir());
+    }
+
     /** Fin de una sesión reportado por el agente (evento del sistema, sin actor humano). */
     @Transactional
     public void finSesion(Long computadoraId, String detalle) {

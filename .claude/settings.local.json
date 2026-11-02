@@ -43,7 +43,10 @@
       "Bash(echo \"global name: $\\(git config --global --get user.name 2>&1\\)\")",
       "Bash(echo \"global email: $\\(git config --global --get user.email 2>&1\\)\")",
       "Bash(command -v gh)",
-      "Bash(gh auth *)"
+      "Bash(gh auth *)",
+      "Bash(chown serverhcpi:serverhcpi agente-publicado)",
+      "Bash(grep -nE \"^#{1,3} \" docs/decisiones.md)",
+      "Bash(grep -nE \"^#{1,3} |^[A-Z][0-9]\" docs/casos-de-uso.md)"
     ]
   }
 }

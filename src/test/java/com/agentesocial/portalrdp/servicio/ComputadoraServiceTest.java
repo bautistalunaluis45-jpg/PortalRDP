@@ -43,6 +43,8 @@ class ComputadoraServiceTest {
     private AuditoriaService auditoriaService;
     @Mock
     private com.agentesocial.portalrdp.repositorio.SesionRdpRepository sesionRdpRepository;
+    @Mock
+    private com.agentesocial.portalrdp.repositorio.UsuarioRepository usuarioRepository;
 
     private ComputadoraService servicio;
     private Departamento soporte;
@@ -51,7 +53,7 @@ class ComputadoraServiceTest {
     void preparar() {
         servicio = new ComputadoraService(computadoraRepository, departamentoRepository, cifrador,
                 Clock.fixed(Instant.parse("2026-10-30T12:00:00Z"), ZoneOffset.UTC),
-                new PropiedadesEstado(), auditoriaService, sesionRdpRepository);
+                new PropiedadesEstado(), auditoriaService, sesionRdpRepository, usuarioRepository);
         soporte = new Departamento("Soporte", "SOP", null);
         ReflectionTestUtils.setField(soporte, "id", 10L);
     }

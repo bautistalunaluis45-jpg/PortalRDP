@@ -30,6 +30,7 @@ public class SeguridadDevConfig {
                 .authorizeHttpRequests(reglas -> reglas
                         .requestMatchers("/dev/login", "/css/**", "/js/**", "/favicon.ico", "/error").permitAll()
                         .requestMatchers("/web/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/web/manager/**", "/web/resumen").hasAnyRole("MANAGER", "ADMIN")
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/dev/login")))

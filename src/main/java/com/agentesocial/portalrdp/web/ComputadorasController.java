@@ -19,11 +19,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.agentesocial.portalrdp.dominio.TipoLanzamiento;
 import com.agentesocial.portalrdp.excepcion.ReglaNegocioException;
 import com.agentesocial.portalrdp.infraestructura.PropiedadesAgente;
 import com.agentesocial.portalrdp.seguridad.PrincipalPortal;
 import com.agentesocial.portalrdp.servicio.ComputadoraService;
 import com.agentesocial.portalrdp.servicio.DepartamentoService;
+import com.agentesocial.portalrdp.servicio.LanzamientoService;
+import com.agentesocial.portalrdp.servicio.OrdenAgenteService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 /** Administración de computadoras (A5, A6, A7). Requiere ROLE_ADMIN. */
 @Controller
@@ -33,12 +38,17 @@ public class ComputadorasController {
     private final ComputadoraService computadoraService;
     private final DepartamentoService departamentoService;
     private final PropiedadesAgente propiedadesAgente;
+    private final LanzamientoService lanzamientoService;
+    private final OrdenAgenteService ordenAgenteService;
 
     public ComputadorasController(ComputadoraService computadoraService, DepartamentoService departamentoService,
-                                  PropiedadesAgente propiedadesAgente) {
+                                  PropiedadesAgente propiedadesAgente, LanzamientoService lanzamientoService,
+                                  OrdenAgenteService ordenAgenteService) {
         this.computadoraService = computadoraService;
         this.departamentoService = departamentoService;
         this.propiedadesAgente = propiedadesAgente;
+        this.lanzamientoService = lanzamientoService;
+        this.ordenAgenteService = ordenAgenteService;
     }
 
     /** Descarga del ejecutable del agente para instalar en las PCs destino. */
@@ -130,28 +140,30 @@ public class ComputadorasController {
     }
 
     @PostMapping("/{id}/conectar")
-    public String conectar(@PathVariable Long id, Model model) {
-        return accionPendiente(id, model, "Conectar",
-                "El lanzamiento (abrir la sesión RDP con mstsc mediante el helper) se implementa en la fase 5.");
+    public String conectar(@PathVariable Long id, @AuthenticationPrincipal PrincipalPortal actor,
+                           HttpServletRequest http, Model model) {
+        model.addAttribute("emision", lanzamientoService.emitir(actor.getUsuarioId(), actor.getCorreo(),
+                actor.getRol(), id, TipoLanzamiento.CONECTAR, http.getRemoteAddr()));
+        return "web/lanzar";
     }
 
     @PostMapping("/{id}/shadow")
-    public String shadow(@PathVariable Long id, Model model) {
-        return accionPendiente(id, model, "Shadow",
-                "La supervisión (shadow) se habilitará cuando exista el agente que la ejecuta en la PC.");
+    public String shadow(@PathVariable Long id, @AuthenticationPrincipal PrincipalPortal actor,
+                         HttpServletRequest http, Model model) {
+        model.addAttribute("emision", lanzamientoService.emitir(actor.getUsuarioId(), actor.getCorreo(),
+                actor.getRol(), id, TipoLanzamiento.SHADOW, http.getRemoteAddr()));
+        return "web/lanzar";
     }
 
     @PostMapping("/{id}/desconectar")
-    public String desconectar(@PathVariable Long id, Model model) {
-        return accionPendiente(id, model, "Desconectar",
-                "Desconectar al usuario se hará por el canal de órdenes al agente de la PC (fase posterior).");
-    }
-
-    private String accionPendiente(Long id, Model model, String accion, String detalle) {
-        model.addAttribute("accion", accion);
-        model.addAttribute("detalle", detalle);
-        model.addAttribute("computadora", computadoraService.obtener(id).nombre());
-        return "web/admin/accion-pendiente";
+    public String desconectar(@PathVariable Long id, @AuthenticationPrincipal PrincipalPortal actor, Model model) {
+        try {
+            model.addAttribute("orden",
+                    ordenAgenteService.ordenarDesconectar(actor.getUsuarioId(), actor.getCorreo(), id));
+        } catch (ReglaNegocioException e) {
+            model.addAttribute("error", e.getMessage());
+        }
+        return "web/orden-enviada";
     }
 
     @PostMapping("/{id}/token-agente")

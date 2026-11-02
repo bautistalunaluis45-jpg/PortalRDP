@@ -50,7 +50,7 @@ public class VisibilidadService {
         this.usuarioRepository = usuarioRepository;
         this.computadoraRepository = computadoraRepository;
         this.accesoTemporalRepository = accesoTemporalRepository;
-        this.sesiones = new SesionActivaConsulta(sesionRdpRepository);
+        this.sesiones = new SesionActivaConsulta(sesionRdpRepository, usuarioRepository);
         this.reloj = reloj;
         this.propiedadesEstado = propiedadesEstado;
     }
@@ -110,11 +110,34 @@ public class VisibilidadService {
                 departamento, temporales, total, libres, ocupadas, sinConexion);
     }
 
+    /**
+     * ¿El usuario puede ver (y por tanto lanzar) esta computadora? True si la PC está
+     * activa y es de su departamento, o si tiene un acceso temporal vigente sobre ella.
+     * Método de lectura que consultan otros servicios (no viola la regla 4).
+     */
+    @Transactional(readOnly = true)
+    public boolean puedeVer(Long usuarioId, Long computadoraId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId).orElse(null);
+        if (usuario == null) {
+            return false;
+        }
+        Computadora c = computadoraRepository.findById(computadoraId).orElse(null);
+        if (c == null || !c.isActiva()) {
+            return false;
+        }
+        if (c.getDepartamento() != null && usuario.getDepartamento() != null
+                && c.getDepartamento().getId().equals(usuario.getDepartamento().getId())) {
+            return true;
+        }
+        return accesoTemporalRepository.vigentesDeUsuario(usuarioId, reloj.instant()).stream()
+                .anyMatch(a -> a.getComputadora().getId().equals(computadoraId));
+    }
+
     private ComputadoraVista aVista(Computadora c, Instant ahora, Duration umbral, boolean temporal,
                                     String vigencia, com.agentesocial.portalrdp.dominio.SesionRdp activa) {
         boolean ocupada = activa != null;
         EstadoComputadora estado = EstadoCalculo.calcular(c.getUltimoLatido(), ahora, umbral, ocupada);
-        String usuarioEnUso = estado == EstadoComputadora.OCUPADA ? SesionActivaConsulta.nombreEnUso(activa) : null;
+        String usuarioEnUso = estado == EstadoComputadora.OCUPADA ? sesiones.nombreMostrado(activa) : null;
         return new ComputadoraVista(c.getId(), c.getNombre(), estado, usuarioEnUso, temporal, vigencia);
     }
 }

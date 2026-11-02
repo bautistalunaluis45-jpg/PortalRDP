@@ -1,5 +1,10 @@
 package com.agentesocial.portalrdp.api.dto;
 
-/** Respuesta al latido: confirmación y cuántas sesiones quedaron registradas como abiertas. */
-public record LatidoResponse(boolean ok, int sesionesAbiertas) {
+import java.util.List;
+
+/**
+ * Respuesta al latido: confirmación, cuántas sesiones quedaron abiertas y las órdenes
+ * pendientes que el agente debe ejecutar (lista vacía si no hay).
+ */
+public record LatidoResponse(boolean ok, int sesionesAbiertas, List<OrdenDto> ordenes) {
 }

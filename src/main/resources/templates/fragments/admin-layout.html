@@ -24,12 +24,15 @@
         <span class="font-headline-sm text-headline-sm text-on-surface tracking-tight">PulseDesk</span>
       </div>
       <span class="px-space-sm py-0.5 bg-primary-fixed text-on-primary-fixed-variant font-label-sm text-label-sm rounded-DEFAULT uppercase tracking-wider font-semibold"
-            th:text="${usuario != null and usuario.rol.name() == 'ADMIN'} ? 'ADMIN' : 'PORTAL'">ADMIN</span>
+            th:text="${usuario == null ? 'PORTAL' : (usuario.rol.name() == 'ADMIN' ? 'ADMIN' : (usuario.rol.name() == 'MANAGER' ? 'MANAGER' : 'PORTAL'))}">ADMIN</span>
     </div>
 
     <!-- Menú ADMIN -->
     <nav th:if="${usuario != null and usuario.rol.name() == 'ADMIN'}" class="flex flex-col gap-1 px-space-md mt-space-sm"
          th:with="base='flex items-center gap-space-md px-space-md py-space-sm rounded-lg transition-colors',act='bg-primary-container text-on-primary font-semibold shadow-sm',inact='text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'">
+      <a th:classappend="${activo == 'resumen'} ? ${act} : ${inact}" th:class="${base}" th:href="@{/web/resumen}">
+        <span class="material-symbols-outlined text-[20px]">insights</span><span class="font-body-md">Resumen</span>
+      </a>
       <a th:classappend="${activo == 'computadoras'} ? ${act} : ${inact}" th:class="${base}" th:href="@{/web/admin/computadoras}">
         <span class="material-symbols-outlined text-[20px]">monitor</span><span class="font-body-md">Computadoras</span>
       </a>
@@ -48,9 +51,28 @@
       <a th:classappend="${activo == 'preferencias'} ? ${act} : ${inact}" th:class="${base}" th:href="@{/web/preferencias}">
         <span class="material-symbols-outlined text-[20px]">tune</span><span class="font-body-md">Preferencias</span>
       </a>
+      <a th:classappend="${activo == 'ayuda'} ? ${act} : ${inact}" th:class="${base}" th:href="@{/web/ayuda}">
+        <span class="material-symbols-outlined text-[20px]">help</span><span class="font-body-md">Ayuda</span>
+      </a>
     </nav>
-    <!-- Menú EMPLEADO / MANAGER -->
-    <nav th:unless="${usuario != null and usuario.rol.name() == 'ADMIN'}" class="flex flex-col gap-1 px-space-md mt-space-sm"
+    <!-- Menú MANAGER (ve todas las computadoras de todos los departamentos) -->
+    <nav th:if="${usuario != null and usuario.rol.name() == 'MANAGER'}" class="flex flex-col gap-1 px-space-md mt-space-sm"
+         th:with="base='flex items-center gap-space-md px-space-md py-space-sm rounded-lg transition-colors',act='bg-primary-container text-on-primary font-semibold shadow-sm',inact='text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'">
+      <a th:classappend="${activo == 'resumen'} ? ${act} : ${inact}" th:class="${base}" th:href="@{/web/resumen}">
+        <span class="material-symbols-outlined text-[20px]">insights</span><span class="font-body-md">Resumen</span>
+      </a>
+      <a th:classappend="${activo == 'computadoras'} ? ${act} : ${inact}" th:class="${base}" th:href="@{/web/manager/computadoras}">
+        <span class="material-symbols-outlined text-[20px]">monitor</span><span class="font-body-md">Computadoras</span>
+      </a>
+      <a th:classappend="${activo == 'preferencias'} ? ${act} : ${inact}" th:class="${base}" th:href="@{/web/preferencias}">
+        <span class="material-symbols-outlined text-[20px]">tune</span><span class="font-body-md">Preferencias</span>
+      </a>
+      <a th:classappend="${activo == 'ayuda'} ? ${act} : ${inact}" th:class="${base}" th:href="@{/web/ayuda}">
+        <span class="material-symbols-outlined text-[20px]">help</span><span class="font-body-md">Ayuda</span>
+      </a>
+    </nav>
+    <!-- Menú EMPLEADO -->
+    <nav th:if="${usuario == null or usuario.rol.name() == 'EMPLEADO'}" class="flex flex-col gap-1 px-space-md mt-space-sm"
          th:with="base='flex items-center gap-space-md px-space-md py-space-sm rounded-lg transition-colors',act='bg-primary-container text-on-primary font-semibold shadow-sm',inact='text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'">
       <a th:classappend="${activo == 'mis-computadoras'} ? ${act} : ${inact}" th:class="${base}" th:href="@{/web/mis-computadoras}">
         <span class="material-symbols-outlined text-[20px]">desktop_windows</span><span class="font-body-md">Mis computadoras</span>
@@ -58,7 +80,7 @@
       <a th:classappend="${activo == 'preferencias'} ? ${act} : ${inact}" th:class="${base}" th:href="@{/web/preferencias}">
         <span class="material-symbols-outlined text-[20px]">tune</span><span class="font-body-md">Preferencias</span>
       </a>
-      <a th:classappend="${activo == 'ayuda'} ? ${act} : ${inact}" th:class="${base}" href="#" title="Disponible próximamente">
+      <a th:classappend="${activo == 'ayuda'} ? ${act} : ${inact}" th:class="${base}" th:href="@{/web/ayuda}">
         <span class="material-symbols-outlined text-[20px]">help</span><span class="font-body-md">Ayuda</span>
       </a>
     </nav>

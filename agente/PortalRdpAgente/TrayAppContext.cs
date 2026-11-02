@@ -57,12 +57,13 @@ internal sealed class TrayAppContext : ApplicationContext
         try
         {
             var sesiones = SesionesWindows.Leer();
-            bool ok = await _cliente.EnviarLatidoAsync(sesiones, _cts.Token);
+            var resp = await _cliente.EnviarLatidoAsync(sesiones, _cts.Token);
             string hora = DateTime.Now.ToString("HH:mm:ss");
-            if (ok)
+            if (resp != null)
             {
                 _itemEstado.Text = $"Conectado · {sesiones.Count} sesión(es) · {hora}";
                 _icono.Text = Recortar($"Portal RDP — Sincronizado {hora}");
+                await EjecutarOrdenesAsync(resp.Ordenes);
             }
             else
             {
@@ -75,6 +76,22 @@ internal sealed class TrayAppContext : ApplicationContext
             _itemEstado.Text = $"Sin conexión con el portal · {DateTime.Now:HH:mm:ss}";
             _icono.Text = Recortar("Portal RDP — Sin conexión con el portal");
             _ = ex; // detalle no se muestra para no saturar
+        }
+    }
+
+    private async Task EjecutarOrdenesAsync(IReadOnlyList<OrdenPortal>? ordenes)
+    {
+        if (ordenes == null || ordenes.Count == 0)
+        {
+            return;
+        }
+        foreach (var orden in ordenes)
+        {
+            ResultadoOrden r = OrdenesEjecutor.Ejecutar(orden);
+            await _cliente.EnviarResultadoOrdenAsync(orden.Id, r.Ok, r.Detalle, _cts.Token);
+            _icono.ShowBalloonTip(3000, "Portal RDP",
+                r.Ok ? "Orden ejecutada: " + r.Detalle : "Orden fallida: " + r.Detalle,
+                r.Ok ? ToolTipIcon.Info : ToolTipIcon.Warning);
         }
     }
 

@@ -17,13 +17,21 @@ import org.springframework.util.StringUtils;
 
 import com.agentesocial.portalrdp.api.dto.LatidoRequest;
 import com.agentesocial.portalrdp.api.dto.LatidoResponse;
+import com.agentesocial.portalrdp.api.dto.OrdenDto;
 import com.agentesocial.portalrdp.api.dto.SesionDto;
 import com.agentesocial.portalrdp.dominio.Computadora;
+import com.agentesocial.portalrdp.dominio.EstadoLanzamiento;
+import com.agentesocial.portalrdp.dominio.EstadoOrden;
 import com.agentesocial.portalrdp.dominio.EstadoSesion;
+import com.agentesocial.portalrdp.dominio.OrdenAgente;
 import com.agentesocial.portalrdp.dominio.SesionRdp;
+import com.agentesocial.portalrdp.dominio.TipoLanzamiento;
 import com.agentesocial.portalrdp.excepcion.AgenteNoAutorizadoException;
+import com.agentesocial.portalrdp.excepcion.ReglaNegocioException;
 import com.agentesocial.portalrdp.infraestructura.Tokens;
 import com.agentesocial.portalrdp.repositorio.ComputadoraRepository;
+import com.agentesocial.portalrdp.repositorio.LanzamientoRepository;
+import com.agentesocial.portalrdp.repositorio.OrdenAgenteRepository;
 import com.agentesocial.portalrdp.repositorio.SesionRdpRepository;
 
 /**
@@ -35,15 +43,21 @@ public class AgenteService {
 
     private final ComputadoraRepository computadoraRepository;
     private final SesionRdpRepository sesionRepository;
+    private final OrdenAgenteRepository ordenRepository;
+    private final LanzamientoRepository lanzamientoRepository;
     private final AuditoriaService auditoriaService;
     private final Clock reloj;
 
     public AgenteService(ComputadoraRepository computadoraRepository,
                          SesionRdpRepository sesionRepository,
+                         OrdenAgenteRepository ordenRepository,
+                         LanzamientoRepository lanzamientoRepository,
                          AuditoriaService auditoriaService,
                          Clock reloj) {
         this.computadoraRepository = computadoraRepository;
         this.sesionRepository = sesionRepository;
+        this.ordenRepository = ordenRepository;
+        this.lanzamientoRepository = lanzamientoRepository;
         this.auditoriaService = auditoriaService;
         this.reloj = reloj;
     }
@@ -80,6 +94,19 @@ public class AgenteService {
             sesion.setUsuarioWindows(dto.usuarioWindows());
             sesion.setIpOrigen(dto.ipOrigen());
             sesion.setIdleSegundos(dto.idleSegundos() == null ? 0 : Math.max(0, dto.idleSegundos()));
+
+            // Atribución (docs 8): si la sesión aún no tiene usuario del portal, se busca el
+            // lanzamiento CONECTAR canjeado de esta PC cuya IP de helper coincide con la IP de
+            // origen que reporta el agente. Así la PC muestra QUIÉN del portal está conectado.
+            if (sesion.getUsuarioAtribuidoId() == null && StringUtils.hasText(dto.ipOrigen())) {
+                var lanzamiento = lanzamientoRepository
+                        .findFirstByComputadora_IdAndTipoAndEstadoAndIpHelperOrderByCanjeadoEnDesc(
+                                computadora.getId(), TipoLanzamiento.CONECTAR,
+                                EstadoLanzamiento.CANJEADO, dto.ipOrigen());
+                if (lanzamiento.isPresent()) {
+                    sesion.setUsuarioAtribuidoId(lanzamiento.get().getUsuario().getId());
+                }
+            }
             sesionRepository.save(sesion);
         }
 
@@ -94,7 +121,36 @@ public class AgenteService {
             }
         }
 
-        return new LatidoResponse(true, reportadasIds.size());
+        // Órdenes pendientes para esta PC: se entregan ahora y quedan ENTREGADA.
+        List<OrdenDto> ordenes = new ArrayList<>();
+        for (OrdenAgente orden : ordenRepository
+                .findByComputadora_IdAndEstadoOrderByCreadaEnAsc(computadora.getId(), EstadoOrden.PENDIENTE)) {
+            orden.setEstado(EstadoOrden.ENTREGADA);
+            orden.setEntregadaEn(ahora);
+            ordenes.add(new OrdenDto(orden.getId(), orden.getTipo().name(), orden.getIdSesionObjetivo()));
+        }
+
+        return new LatidoResponse(true, reportadasIds.size(), ordenes);
+    }
+
+    /** Acuse del agente tras ejecutar una orden. Autentica por el token por PC. */
+    @Transactional
+    public void registrarResultadoOrden(String tokenPlano, Long ordenId, boolean ok, String detalle) {
+        if (!StringUtils.hasText(tokenPlano)) {
+            throw new AgenteNoAutorizadoException("Falta el token del agente.");
+        }
+        Computadora computadora = computadoraRepository.findByTokenAgenteHash(Tokens.hash(tokenPlano))
+                .orElseThrow(() -> new AgenteNoAutorizadoException("Token de agente no válido."));
+        OrdenAgente orden = ordenRepository.findById(ordenId)
+                .orElseThrow(() -> new ReglaNegocioException("La orden no existe."));
+        if (!orden.getComputadora().getId().equals(computadora.getId())) {
+            throw new AgenteNoAutorizadoException("La orden no pertenece a esta PC.");
+        }
+        orden.setEstado(ok ? EstadoOrden.EJECUTADA : EstadoOrden.FALLIDA);
+        orden.setResueltaEn(reloj.instant());
+        if (detalle != null) {
+            orden.setDetalle(detalle.length() > 500 ? detalle.substring(0, 500) : detalle);
+        }
     }
 
     private static EstadoSesion parseEstado(String estado) {

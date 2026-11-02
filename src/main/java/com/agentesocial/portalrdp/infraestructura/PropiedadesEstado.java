@@ -14,6 +14,9 @@ public class PropiedadesEstado {
 
     private long sinConexionTrasSegundos = 90;
 
+    /** Inactividad (segundos) a partir de la cual una sesión se marca "idle" en el resumen. */
+    private long idleTrasSegundos = 600;
+
     public long getSinConexionTrasSegundos() {
         return sinConexionTrasSegundos;
     }
@@ -24,5 +27,13 @@ public class PropiedadesEstado {
 
     public Duration umbralSinConexion() {
         return Duration.ofSeconds(sinConexionTrasSegundos);
+    }
+
+    public long getIdleTrasSegundos() {
+        return idleTrasSegundos;
+    }
+
+    public void setIdleTrasSegundos(long idleTrasSegundos) {
+        this.idleTrasSegundos = idleTrasSegundos;
     }
 }

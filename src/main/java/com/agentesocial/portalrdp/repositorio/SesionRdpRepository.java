@@ -19,4 +19,7 @@ public interface SesionRdpRepository extends JpaRepository<SesionRdp, Long> {
 
     /** Sesiones conectadas de un conjunto de PCs (para pintar varias filas a la vez). */
     List<SesionRdp> findByComputadora_IdInAndEstadoAndFinEnIsNull(Collection<Long> computadoraIds, EstadoSesion estado);
+
+    /** Todas las sesiones conectadas ahora (para el resumen "en vivo"). */
+    List<SesionRdp> findByEstadoAndFinEnIsNullOrderByDesdeAsc(EstadoSesion estado);
 }

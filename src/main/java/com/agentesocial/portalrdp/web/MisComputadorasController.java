@@ -8,18 +8,25 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.agentesocial.portalrdp.dominio.TipoLanzamiento;
 import com.agentesocial.portalrdp.seguridad.PrincipalPortal;
+import com.agentesocial.portalrdp.servicio.LanzamientoService;
 import com.agentesocial.portalrdp.servicio.VisibilidadService;
 
-/** Pantalla "Mis computadoras" del empleado (casos E1, E2). */
+import jakarta.servlet.http.HttpServletRequest;
+
+/** Pantalla "Mis computadoras" del empleado (casos E1, E2) y su botón Conectar (fase 5). */
 @Controller
 @RequestMapping("/web")
 public class MisComputadorasController {
 
     private final VisibilidadService visibilidadService;
+    private final LanzamientoService lanzamientoService;
 
-    public MisComputadorasController(VisibilidadService visibilidadService) {
+    public MisComputadorasController(VisibilidadService visibilidadService,
+                                     LanzamientoService lanzamientoService) {
         this.visibilidadService = visibilidadService;
+        this.lanzamientoService = lanzamientoService;
     }
 
     @GetMapping("/mis-computadoras")
@@ -30,16 +37,18 @@ public class MisComputadorasController {
     }
 
     /**
-     * Marcador del boton Conectar. El lanzamiento real (validar visibilidad y que la
-     * PC este libre, emitir el token de un solo uso y abrir mstsc por el helper) es la
-     * fase 5 (docs/decisiones.md seccion 5). Aqui no se lanza nada todavia.
+     * Conectar: valida (visibilidad + PC libre), emite el token de un solo uso y manda a
+     * la pantalla que abre el protocolo del helper (docs/decisiones.md 5). Si se rechaza,
+     * la misma pantalla muestra el motivo (ya quedó auditado).
      */
     @PostMapping("/mis-computadoras/{id}/conectar")
     public String conectar(@PathVariable Long id,
                            @AuthenticationPrincipal PrincipalPortal usuario,
+                           HttpServletRequest http,
                            Model model) {
         model.addAttribute("usuario", usuario);
-        model.addAttribute("computadoraId", id);
-        return "web/conectar-pendiente";
+        model.addAttribute("emision", lanzamientoService.emitir(usuario.getUsuarioId(), usuario.getCorreo(),
+                usuario.getRol(), id, TipoLanzamiento.CONECTAR, http.getRemoteAddr()));
+        return "web/lanzar";
     }
 }

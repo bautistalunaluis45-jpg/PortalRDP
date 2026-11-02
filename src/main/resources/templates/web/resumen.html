@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: documento('Resumen', 'resumen', ~{::contenido})}">
+<body>
+<div th:fragment="contenido" class="flex flex-col w-full gap-space-lg">
+
+  <div class="flex flex-col gap-space-xs">
+    <div class="flex items-center gap-space-xs text-primary font-label-sm text-label-sm tracking-wider uppercase">
+      <span class="material-symbols-outlined text-[18px]">insights</span><span>Resumen en vivo</span>
+    </div>
+    <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Resumen</h1>
+    <p class="font-body-md text-body-md text-on-surface-variant">Estado actual de equipos y usuarios de todos los departamentos.</p>
+  </div>
+
+  <!-- KPIs -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-space-md">
+    <div class="p-space-lg bg-surface-container-lowest rounded-xl shadow-sm flex items-center gap-space-md">
+      <div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[20px]">devices</span></div>
+      <div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">PCs</span><span class="font-data-metric text-data-metric text-on-surface font-semibold" th:text="${r.totalPcs()}">0</span></div>
+    </div>
+    <div class="p-space-lg bg-surface-container-lowest rounded-xl shadow-sm flex items-center gap-space-md">
+      <div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-tertiary"><span class="material-symbols-outlined text-[20px]">check_circle</span></div>
+      <div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Libres</span><span class="font-data-metric text-data-metric text-tertiary font-semibold" th:text="${r.libres()}">0</span></div>
+    </div>
+    <div class="p-space-lg bg-surface-container-lowest rounded-xl shadow-sm flex items-center gap-space-md">
+      <div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[20px]">lan</span></div>
+      <div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">En uso</span><span class="font-data-metric text-data-metric text-on-surface font-semibold" th:text="${r.ocupadas()}">0</span></div>
+    </div>
+    <div class="p-space-lg bg-surface-container-lowest rounded-xl shadow-sm flex items-center gap-space-md">
+      <div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-secondary"><span class="material-symbols-outlined text-[20px]">cloud_off</span></div>
+      <div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Sin conexión</span><span class="font-data-metric text-data-metric text-on-surface font-semibold" th:text="${r.sinConexion()}">0</span></div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-space-lg items-start">
+
+    <!-- En uso ahora (incluye quién está idle) -->
+    <div class="xl:col-span-2 bg-surface-container-lowest rounded-xl shadow-sm flex flex-col">
+      <div class="p-space-lg flex items-center justify-between border-b border-surface-container">
+        <h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold flex items-center gap-space-sm">
+          <span class="material-symbols-outlined text-[20px] text-primary">groups</span>Conectados ahora
+        </h2>
+        <span th:if="${r.idleCount() > 0}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 font-label-sm text-label-sm font-semibold">
+          <span class="material-symbols-outlined text-[16px]">timer</span><span th:text="|${r.idleCount()} en idle|">0 en idle</span>
+        </span>
+      </div>
+      <p th:if="${#lists.isEmpty(r.enUso())}" class="p-space-xl text-center text-on-surface-variant font-body-md">Nadie conectado en este momento.</p>
+      <div th:unless="${#lists.isEmpty(r.enUso())}" class="divide-y divide-surface-container">
+        <div th:each="s : ${r.enUso()}" class="p-space-lg flex items-center justify-between gap-space-md"
+             th:classappend="${s.idle()} ? 'bg-amber-50/40' : ''">
+          <div class="flex items-center gap-space-md min-w-0">
+            <div class="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+                 th:classappend="${s.idle()} ? 'bg-amber-100 text-amber-800' : 'bg-primary-container text-on-primary'">
+              <span class="material-symbols-outlined text-[18px]">person</span>
+            </div>
+            <div class="flex flex-col min-w-0">
+              <span class="font-body-md text-body-md font-semibold text-on-surface truncate" th:text="${s.usuario()}">usuario</span>
+              <span class="font-label-sm text-label-sm text-on-surface-variant truncate"
+                    th:text="|${s.computadora()} · ${s.departamento()} · ${s.desdeTexto()}|">PC · depto · hace</span>
+            </div>
+          </div>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-label-sm text-label-sm font-semibold shrink-0"
+                th:classappend="${s.idle()} ? 'bg-amber-50 border border-amber-200 text-amber-800' : 'bg-tertiary/10 text-tertiary'"
+                th:text="${s.idleTexto()}">estado</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-space-lg">
+      <!-- Requiere atención -->
+      <div class="bg-surface-container-lowest rounded-xl shadow-sm flex flex-col">
+        <div class="p-space-lg border-b border-surface-container">
+          <h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold flex items-center gap-space-sm">
+            <span class="material-symbols-outlined text-[20px] text-primary">priority_high</span>Requiere atención
+          </h2>
+        </div>
+        <div class="p-space-lg flex flex-col gap-space-md">
+          <div th:if="${#lists.isEmpty(r.sinConexionPcs())} and (${usuario.rol.name() != 'ADMIN'} or ${#lists.isEmpty(r.sinCredencialPcs())})"
+               class="text-on-surface-variant font-body-sm text-body-sm flex items-center gap-space-sm">
+            <span class="material-symbols-outlined text-[18px] text-tertiary">check_circle</span>Todo en orden.
+          </div>
+          <div th:unless="${#lists.isEmpty(r.sinConexionPcs())}" class="flex flex-col gap-space-xs">
+            <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant" th:text="|Sin conexión (${#lists.size(r.sinConexionPcs())})|">Sin conexión</span>
+            <div th:each="p : ${r.sinConexionPcs()}" class="flex items-center gap-space-sm font-body-sm text-body-sm text-on-surface">
+              <span class="w-2 h-2 rounded-full bg-outline shrink-0"></span>
+              <span class="font-semibold" th:text="${p.nombre()}">PC</span>
+              <span class="text-on-surface-variant truncate" th:text="|· ${p.departamento()} · ${p.detalle()}|">info</span>
+            </div>
+          </div>
+          <!-- Sin credencial: solo admin -->
+          <div th:if="${usuario.rol.name() == 'ADMIN' and !#lists.isEmpty(r.sinCredencialPcs())}" class="flex flex-col gap-space-xs">
+            <span class="font-label-sm text-label-sm uppercase tracking-wider text-error" th:text="|Sin contraseña (${#lists.size(r.sinCredencialPcs())})|">Sin contraseña</span>
+            <div th:each="p : ${r.sinCredencialPcs()}" class="flex items-center gap-space-sm font-body-sm text-body-sm text-on-surface">
+              <span class="material-symbols-outlined text-[16px] text-error shrink-0">key_off</span>
+              <span class="font-semibold" th:text="${p.nombre()}">PC</span>
+              <span class="text-on-surface-variant truncate" th:text="|· ${p.departamento()}|">depto</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Accesos temporales -->
+      <div class="bg-surface-container-lowest rounded-xl shadow-sm flex flex-col">
+        <div class="p-space-lg border-b border-surface-container flex items-center justify-between">
+          <h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold flex items-center gap-space-sm">
+            <span class="material-symbols-outlined text-[20px] text-primary">timer</span>Accesos temporales
+          </h2>
+          <span class="font-label-md text-label-md text-on-surface-variant" th:text="|${r.accesosVigentes()} vigentes|">0 vigentes</span>
+        </div>
+        <div class="p-space-lg flex flex-col gap-space-xs">
+          <p th:if="${#lists.isEmpty(r.porVencer())}" class="text-on-surface-variant font-body-sm text-body-sm">Ninguno vence en las próximas 24 h.</p>
+          <div th:each="a : ${r.porVencer()}" class="flex items-center justify-between gap-space-sm font-body-sm text-body-sm">
+            <span class="truncate"><strong class="text-on-surface" th:text="${a.usuario()}">u</strong> <span class="text-on-surface-variant" th:text="|→ ${a.computadora()}|">pc</span></span>
+            <span class="text-amber-800 font-medium shrink-0" th:text="${a.venceTexto()}">vence</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="font-label-sm text-label-sm text-on-surface-variant">
+    La inactividad (idle) la reporta el agente de cada PC y la atribución es por cuenta de Windows; umbral de idle configurable. Es información en vivo, sin histórico.
+  </p>
+</div>
+</body>
+</html>

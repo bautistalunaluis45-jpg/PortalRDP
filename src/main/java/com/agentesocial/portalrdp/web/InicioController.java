@@ -16,7 +16,10 @@ public class InicioController {
         if (usuario != null && usuario.getRol() == Rol.ADMIN) {
             return "redirect:/web/admin/departamentos";
         }
-        // Empleado (y, por ahora, manager hasta que exista su vista) van a Mis computadoras.
+        if (usuario != null && usuario.getRol() == Rol.MANAGER) {
+            return "redirect:/web/manager/computadoras";
+        }
+        // Empleado: sus computadoras asignadas y accesos temporales.
         return "redirect:/web/mis-computadoras";
     }
 }
