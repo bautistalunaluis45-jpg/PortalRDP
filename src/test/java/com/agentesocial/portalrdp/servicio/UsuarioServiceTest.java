@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.agentesocial.portalrdp.dominio.Departamento;
 import com.agentesocial.portalrdp.dominio.Rol;
@@ -36,9 +37,21 @@ class UsuarioServiceTest {
     private com.agentesocial.portalrdp.repositorio.ComputadoraRepository computadoraRepository;
     @Mock
     private AuditoriaService auditoriaService;
+    @Mock
+    private com.agentesocial.portalrdp.repositorio.PreferenciasRdpRepository preferenciasRdpRepository;
+    @Mock
+    private com.agentesocial.portalrdp.repositorio.AccesoTemporalRepository accesoTemporalRepository;
+    @Mock
+    private com.agentesocial.portalrdp.repositorio.LanzamientoRepository lanzamientoRepository;
+    @Mock
+    private com.agentesocial.portalrdp.repositorio.OrdenAgenteRepository ordenAgenteRepository;
+    @Mock
+    private com.agentesocial.portalrdp.repositorio.SesionRdpRepository sesionRdpRepository;
 
     private UsuarioService servicio() {
-        return new UsuarioService(usuarioRepository, departamentoRepository, computadoraRepository, auditoriaService);
+        return new UsuarioService(usuarioRepository, departamentoRepository, computadoraRepository, auditoriaService,
+                preferenciasRdpRepository, accesoTemporalRepository, lanzamientoRepository, ordenAgenteRepository,
+                sesionRdpRepository);
     }
 
     private Usuario usuarioActivo() {
@@ -122,5 +135,32 @@ class UsuarioServiceTest {
         assertThatThrownBy(() -> servicio().cambiarEstado(5L, false, 5L, "yo@x.com"))
                 .isInstanceOf(ReglaNegocioException.class);
         verify(usuarioRepository, never()).findById(anyLong());
+    }
+
+    @Test
+    void noPuedeEliminarseASiMismo() {
+        assertThatThrownBy(() -> servicio().eliminar(5L, 5L, "yo@x.com"))
+                .isInstanceOf(ReglaNegocioException.class);
+        verify(usuarioRepository, never()).findById(anyLong());
+        verify(usuarioRepository, never()).delete(any());
+    }
+
+    @Test
+    void eliminarBorraDatosOperativosAuditaYConservaLaAuditoria() {
+        Usuario u = usuarioActivo();
+        ReflectionTestUtils.setField(u, "id", 5L);
+        when(usuarioRepository.findById(5L)).thenReturn(Optional.of(u));
+
+        servicio().eliminar(5L, 1L, "admin@x.com");
+
+        // Audita el borrado ANTES de borrar (queda constancia con el correo).
+        verify(auditoriaService).usuarioEliminado(eq(1L), eq("admin@x.com"), eq(5L), anyString());
+        // Limpia lo que lo referencia por FK; las sesiones solo pierden la atribución.
+        verify(preferenciasRdpRepository).eliminarPorUsuario(5L);
+        verify(accesoTemporalRepository).eliminarPorUsuarioOOtorgante(5L);
+        verify(lanzamientoRepository).eliminarPorUsuario(5L);
+        verify(ordenAgenteRepository).eliminarPorCreador(5L);
+        verify(sesionRdpRepository).desatribuirUsuario(5L);
+        verify(usuarioRepository).delete(u);
     }
 }

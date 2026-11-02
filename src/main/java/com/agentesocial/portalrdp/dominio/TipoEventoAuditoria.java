@@ -18,7 +18,9 @@ public enum TipoEventoAuditoria {
     CAMBIO_USUARIO,
     CAMBIO_COMPUTADORA,
     CAMBIO_DEPARTAMENTO,
-    CAMBIO_PASSWORD_PC;
+    CAMBIO_PASSWORD_PC,
+    USUARIO_ELIMINADO,
+    COMPUTADORA_ELIMINADA;
 
     /** Etiqueta legible para la interfaz. */
     public String etiqueta() {
@@ -37,6 +39,8 @@ public enum TipoEventoAuditoria {
             case CAMBIO_COMPUTADORA -> "Cambio de computadora";
             case CAMBIO_DEPARTAMENTO -> "Cambio de departamento";
             case CAMBIO_PASSWORD_PC -> "Cambio de contraseña de PC";
+            case USUARIO_ELIMINADO -> "Usuario eliminado";
+            case COMPUTADORA_ELIMINADA -> "Computadora eliminada";
         };
     }
 }

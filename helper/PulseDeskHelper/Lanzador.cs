@@ -104,14 +104,70 @@ internal static class Lanzador
             "ESTA_PC" => 0,
             _ => 2
         });
-        // connection type (1..7): aproxima la calidad. Por verificar el mapeo fino.
+        // Perfil de calidad: cada nivel es una plantilla completa de experiencia
+        // (profundidad de color, tipo de conexión, compresión, caché y efectos visuales),
+        // no un solo campo. Ver docs/decisiones.md 13.
+        sb.Append(BloqueCalidad(c.Calidad));
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Devuelve el bloque de líneas .rdp que define la experiencia para un nivel de calidad.
+    /// RAPIDA sacrifica lo visual por fluidez/ancho de banda; MAXIMA deja todo activado en LAN;
+    /// EQUILIBRADA queda en medio. Valores de "connection type": 2=banda ancha lenta, 5=WAN, 6=LAN.
+    /// </summary>
+    private static string BloqueCalidad(string? calidad)
+    {
+        var sb = new StringBuilder();
+        // La autodetección de red mandaría sobre el perfil fijo: la desactivamos para que
+        // el nivel elegido por el usuario sea el que realmente se aplique.
         sb.AppendLine("networkautodetect:i:0");
-        sb.AppendLine("connection type:i:" + c.Calidad switch
+        sb.AppendLine("bandwidthautodetect:i:0");
+
+        switch ((calidad ?? "").ToUpperInvariant())
         {
-            "RAPIDA" => 2,
-            "MAXIMA" => 7,
-            _ => 5
-        });
+            case "RAPIDA":
+                sb.AppendLine("connection type:i:2");   // banda ancha lenta
+                sb.AppendLine("session bpp:i:16");       // menos color = menos ancho de banda
+                sb.AppendLine("compression:i:1");
+                sb.AppendLine("bitmapcachepersistenable:i:1");
+                sb.AppendLine("disable wallpaper:i:1");
+                sb.AppendLine("allow font smoothing:i:0");
+                sb.AppendLine("allow desktop composition:i:0");
+                sb.AppendLine("disable full window drag:i:1");
+                sb.AppendLine("disable menu anims:i:1");
+                sb.AppendLine("disable themes:i:1");
+                sb.AppendLine("disable cursor setting:i:1");
+                break;
+
+            case "MAXIMA":
+                sb.AppendLine("connection type:i:6");    // LAN
+                sb.AppendLine("session bpp:i:32");        // color completo
+                sb.AppendLine("compression:i:1");         // sin pérdida, no afecta a la calidad
+                sb.AppendLine("bitmapcachepersistenable:i:1");
+                sb.AppendLine("disable wallpaper:i:0");
+                sb.AppendLine("allow font smoothing:i:1");
+                sb.AppendLine("allow desktop composition:i:1");
+                sb.AppendLine("disable full window drag:i:0");
+                sb.AppendLine("disable menu anims:i:0");
+                sb.AppendLine("disable themes:i:0");
+                sb.AppendLine("disable cursor setting:i:0");
+                break;
+
+            default: // EQUILIBRADA
+                sb.AppendLine("connection type:i:5");    // WAN
+                sb.AppendLine("session bpp:i:24");
+                sb.AppendLine("compression:i:1");
+                sb.AppendLine("bitmapcachepersistenable:i:1");
+                sb.AppendLine("disable wallpaper:i:1");
+                sb.AppendLine("allow font smoothing:i:1");
+                sb.AppendLine("allow desktop composition:i:0");
+                sb.AppendLine("disable full window drag:i:1");
+                sb.AppendLine("disable menu anims:i:1");
+                sb.AppendLine("disable themes:i:0");
+                sb.AppendLine("disable cursor setting:i:0");
+                break;
+        }
         return sb.ToString();
     }
 

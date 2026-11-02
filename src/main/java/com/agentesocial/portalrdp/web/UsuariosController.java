@@ -124,6 +124,20 @@ public class UsuariosController {
         return "redirect:/web/admin/usuarios/" + id;
     }
 
+    @PostMapping("/{id}/eliminar")
+    public String eliminar(@PathVariable Long id,
+                           @AuthenticationPrincipal PrincipalPortal actor,
+                           RedirectAttributes flash) {
+        try {
+            usuarioService.eliminar(id, actor.getUsuarioId(), actor.getCorreo());
+            flash.addFlashAttribute("exito", "Usuario eliminado definitivamente. Su historial de auditoría se conserva.");
+        } catch (ReglaNegocioException e) {
+            flash.addFlashAttribute("error", e.getMessage());
+            return "redirect:/web/admin/usuarios/" + id;
+        }
+        return "redirect:/web/admin/usuarios";
+    }
+
     private static Rol parseRol(String rol) {
         if (rol == null || rol.isBlank()) {
             throw new ReglaNegocioException("El rol es obligatorio.");

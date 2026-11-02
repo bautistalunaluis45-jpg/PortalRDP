@@ -130,6 +130,24 @@
           </button>
         </form>
       </div>
+
+      <!-- Zona peligrosa: borrado definitivo (oculto para la propia cuenta) -->
+      <div th:unless="${usuario != null and usuario.usuarioId == u.id()}"
+           class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-space-md border border-error/30">
+        <div class="flex items-start gap-space-sm">
+          <div class="w-8 h-8 rounded-lg bg-error/10 flex items-center justify-center text-error shrink-0"><span class="material-symbols-outlined text-[18px]">delete_forever</span></div>
+          <div class="flex flex-col">
+            <span class="font-headline-sm text-body-md text-on-surface font-semibold">Eliminar definitivamente</span>
+            <span class="font-body-sm text-body-sm text-on-surface-variant">Borra el usuario y sus datos operativos (preferencias, accesos temporales, lanzamientos y órdenes). <strong class="text-on-surface">No se puede deshacer.</strong> Los registros de auditoría <strong class="text-on-surface">se conservan</strong>.</span>
+          </div>
+        </div>
+        <form method="post" th:action="@{/web/admin/usuarios/{id}/eliminar(id=${u.id()})}" class="shrink-0"
+              onsubmit="return confirm('¿Eliminar DEFINITIVAMENTE este usuario? Esta acción no se puede deshacer. El historial de auditoría se conserva.');">
+          <button type="submit" class="inline-flex items-center gap-space-xs px-space-lg py-space-sm rounded-lg bg-error text-on-error hover:opacity-90 font-label-md text-label-md font-semibold transition-colors">
+            <span class="material-symbols-outlined text-[18px]">delete_forever</span>Eliminar definitivamente
+          </button>
+        </form>
+      </div>
     </div>
 
     <!-- Columna derecha: registro de actividad -->

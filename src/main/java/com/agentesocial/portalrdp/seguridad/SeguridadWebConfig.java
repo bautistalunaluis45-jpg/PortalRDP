@@ -21,6 +21,7 @@ public class SeguridadWebConfig {
         http
                 .authorizeHttpRequests(reglas -> reglas
                         .requestMatchers("/login", "/css/**", "/js/**", "/favicon.ico", "/error").permitAll()
+                        .requestMatchers("/descargas/**").permitAll()
                         .requestMatchers("/web/admin/**").hasRole("ADMIN")
                         .requestMatchers("/web/manager/**", "/web/resumen").hasAnyRole("MANAGER", "ADMIN")
                         .anyRequest().authenticated())

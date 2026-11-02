@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -42,4 +43,14 @@ public interface AccesoTemporalRepository extends JpaRepository<AccesoTemporal, 
     boolean existeVigente(@Param("usuarioId") Long usuarioId,
                           @Param("computadoraId") Long computadoraId,
                           @Param("ahora") Instant ahora);
+
+    /** Borrado en cascada al eliminar una computadora por completo. */
+    @Modifying
+    @Query("delete from AccesoTemporal a where a.computadora.id = :computadoraId")
+    void eliminarPorComputadora(@Param("computadoraId") Long computadoraId);
+
+    /** Borrado al eliminar un usuario: sus accesos y los que él otorgó a otros. */
+    @Modifying
+    @Query("delete from AccesoTemporal a where a.usuario.id = :usuarioId or a.otorgadoPor.id = :usuarioId")
+    void eliminarPorUsuarioOOtorgante(@Param("usuarioId") Long usuarioId);
 }

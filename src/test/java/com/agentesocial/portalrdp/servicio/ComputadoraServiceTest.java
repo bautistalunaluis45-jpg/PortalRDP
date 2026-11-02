@@ -45,6 +45,12 @@ class ComputadoraServiceTest {
     private com.agentesocial.portalrdp.repositorio.SesionRdpRepository sesionRdpRepository;
     @Mock
     private com.agentesocial.portalrdp.repositorio.UsuarioRepository usuarioRepository;
+    @Mock
+    private com.agentesocial.portalrdp.repositorio.AccesoTemporalRepository accesoTemporalRepository;
+    @Mock
+    private com.agentesocial.portalrdp.repositorio.LanzamientoRepository lanzamientoRepository;
+    @Mock
+    private com.agentesocial.portalrdp.repositorio.OrdenAgenteRepository ordenAgenteRepository;
 
     private ComputadoraService servicio;
     private Departamento soporte;
@@ -53,7 +59,8 @@ class ComputadoraServiceTest {
     void preparar() {
         servicio = new ComputadoraService(computadoraRepository, departamentoRepository, cifrador,
                 Clock.fixed(Instant.parse("2026-10-30T12:00:00Z"), ZoneOffset.UTC),
-                new PropiedadesEstado(), auditoriaService, sesionRdpRepository, usuarioRepository);
+                new PropiedadesEstado(), auditoriaService, sesionRdpRepository, usuarioRepository,
+                accesoTemporalRepository, lanzamientoRepository, ordenAgenteRepository);
         soporte = new Departamento("Soporte", "SOP", null);
         ReflectionTestUtils.setField(soporte, "id", 10L);
     }
@@ -126,5 +133,23 @@ class ComputadoraServiceTest {
 
         assertThat(c.isActiva()).isFalse();
         verify(auditoriaService).cambioComputadora(anyLong(), anyString(), eq(5L), anyString());
+    }
+
+    @Test
+    void eliminarBorraDatosOperativosAuditaYNoTocaLaAuditoriaExistente() {
+        Computadora c = new Computadora("PC-01", soporte, "100.100.0.9");
+        ReflectionTestUtils.setField(c, "id", 5L);
+        when(computadoraRepository.findById(5L)).thenReturn(Optional.of(c));
+
+        servicio.eliminar(5L, 1L, "a@x.com");
+
+        // Audita el borrado ANTES de borrar la fila (queda constancia con el nombre).
+        verify(auditoriaService).computadoraEliminada(eq(1L), eq("a@x.com"), eq(5L), anyString());
+        // Limpia lo que la referencia por FK.
+        verify(ordenAgenteRepository).eliminarPorComputadora(5L);
+        verify(lanzamientoRepository).eliminarPorComputadora(5L);
+        verify(sesionRdpRepository).eliminarPorComputadora(5L);
+        verify(accesoTemporalRepository).eliminarPorComputadora(5L);
+        verify(computadoraRepository).delete(c);
     }
 }

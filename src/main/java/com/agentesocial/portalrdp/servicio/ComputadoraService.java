@@ -34,6 +34,10 @@ public class ComputadoraService {
     private final PropiedadesEstado propiedadesEstado;
     private final AuditoriaService auditoriaService;
     private final SesionActivaConsulta sesiones;
+    private final com.agentesocial.portalrdp.repositorio.SesionRdpRepository sesionRdpRepository;
+    private final com.agentesocial.portalrdp.repositorio.AccesoTemporalRepository accesoTemporalRepository;
+    private final com.agentesocial.portalrdp.repositorio.LanzamientoRepository lanzamientoRepository;
+    private final com.agentesocial.portalrdp.repositorio.OrdenAgenteRepository ordenAgenteRepository;
 
     public ComputadoraService(ComputadoraRepository computadoraRepository,
                               DepartamentoRepository departamentoRepository,
@@ -42,7 +46,10 @@ public class ComputadoraService {
                               PropiedadesEstado propiedadesEstado,
                               AuditoriaService auditoriaService,
                               com.agentesocial.portalrdp.repositorio.SesionRdpRepository sesionRdpRepository,
-                              com.agentesocial.portalrdp.repositorio.UsuarioRepository usuarioRepository) {
+                              com.agentesocial.portalrdp.repositorio.UsuarioRepository usuarioRepository,
+                              com.agentesocial.portalrdp.repositorio.AccesoTemporalRepository accesoTemporalRepository,
+                              com.agentesocial.portalrdp.repositorio.LanzamientoRepository lanzamientoRepository,
+                              com.agentesocial.portalrdp.repositorio.OrdenAgenteRepository ordenAgenteRepository) {
         this.computadoraRepository = computadoraRepository;
         this.departamentoRepository = departamentoRepository;
         this.cifrador = cifrador;
@@ -50,6 +57,10 @@ public class ComputadoraService {
         this.propiedadesEstado = propiedadesEstado;
         this.auditoriaService = auditoriaService;
         this.sesiones = new SesionActivaConsulta(sesionRdpRepository, usuarioRepository);
+        this.sesionRdpRepository = sesionRdpRepository;
+        this.accesoTemporalRepository = accesoTemporalRepository;
+        this.lanzamientoRepository = lanzamientoRepository;
+        this.ordenAgenteRepository = ordenAgenteRepository;
     }
 
     @Transactional(readOnly = true)
@@ -172,6 +183,28 @@ public class ComputadoraService {
         c.setActiva(activa);
         auditoriaService.cambioComputadora(actorId, actorCorreo, id,
                 (activa ? "Reactivación" : "Baja") + " de computadora: " + c.getNombre());
+    }
+
+    /**
+     * Elimina DEFINITIVAMENTE una computadora y sus datos operativos asociados
+     * (accesos temporales, sesiones, lanzamientos y órdenes del agente). La bitácora de
+     * auditoría NO se borra: queda como historial (la FK se quitó en V11) y se añade un
+     * evento del propio borrado. Acción irreversible (A6 "dar de baja" sigue siendo el
+     * camino reversible; esto es el borrado total).
+     */
+    @Transactional
+    public void eliminar(Long id, Long actorId, String actorCorreo) {
+        Computadora c = cargar(id);
+        // Auditoría primero: así queda constancia con el nombre aunque la fila desaparezca.
+        auditoriaService.computadoraEliminada(actorId, actorCorreo, id,
+                "Eliminación definitiva de computadora: " + c.getNombre()
+                        + " (" + c.getDireccionTailscale() + ")");
+        // Limpiar lo que la referencia por clave foránea (datos operativos, no auditoría).
+        ordenAgenteRepository.eliminarPorComputadora(id);
+        lanzamientoRepository.eliminarPorComputadora(id);
+        sesionRdpRepository.eliminarPorComputadora(id);
+        accesoTemporalRepository.eliminarPorComputadora(id);
+        computadoraRepository.delete(c);
     }
 
     private EstadoComputadora estado(Computadora c, Instant ahora, Duration umbral, boolean ocupada) {

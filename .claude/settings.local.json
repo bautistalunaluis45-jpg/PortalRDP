@@ -46,7 +46,14 @@
       "Bash(gh auth *)",
       "Bash(chown serverhcpi:serverhcpi agente-publicado)",
       "Bash(grep -nE \"^#{1,3} \" docs/decisiones.md)",
-      "Bash(grep -nE \"^#{1,3} |^[A-Z][0-9]\" docs/casos-de-uso.md)"
+      "Bash(grep -nE \"^#{1,3} |^[A-Z][0-9]\" docs/casos-de-uso.md)",
+      "Bash(break)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} -> %{redirect_url}\\\\n\" http://localhost:8099/descargas/agente)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} -> %{redirect_url}\\\\n\" http://localhost:8099/web/mis-computadoras)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} -> %{redirect_url}\\\\n\" http://localhost:8099/web/helper/descargar)",
+      "Bash(docker stop *)",
+      "Bash(docker run *)",
+      "Bash(python3 *)"
     ]
   }
 }

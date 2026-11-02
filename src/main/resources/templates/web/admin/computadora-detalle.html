@@ -153,6 +153,18 @@
           </button>
         </form>
       </div>
+
+      <!-- Zona peligrosa: borrado definitivo -->
+      <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-sm border border-error/30">
+        <div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-error text-[20px]">delete_forever</span><h3 class="font-headline-sm text-body-md text-on-surface">Eliminar definitivamente</h3></div>
+        <p class="font-label-sm text-label-sm text-on-surface-variant">Borra la computadora y sus datos operativos (accesos temporales, sesiones, lanzamientos y órdenes). <strong class="text-on-surface">No se puede deshacer.</strong> Los registros de auditoría <strong class="text-on-surface">se conservan</strong>.</p>
+        <form method="post" th:action="@{/web/admin/computadoras/{id}/eliminar(id=${c.id()})}"
+              onsubmit="return confirm('¿Eliminar DEFINITIVAMENTE esta computadora? Esta acción no se puede deshacer. El historial de auditoría se conserva.');">
+          <button type="submit" class="w-full inline-flex items-center justify-center gap-space-xs px-space-md py-space-sm rounded-lg bg-error text-on-error hover:opacity-90 font-label-md text-label-md font-semibold transition-colors">
+            <span class="material-symbols-outlined text-[18px]">delete_forever</span>Eliminar definitivamente
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 </div>

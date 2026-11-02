@@ -167,7 +167,7 @@ public class ConsultaAuditoriaService {
         return switch (tipo) {
             case ENTRADA_PORTAL, LANZAMIENTO_RDP -> "primary";
             case ACCESO_TEMPORAL_CREADO -> "tertiary";
-            case EXPULSION, DESCONECTAR, ACCESO_TEMPORAL_REVOCADO -> "error";
+            case EXPULSION, DESCONECTAR, ACCESO_TEMPORAL_REVOCADO, USUARIO_ELIMINADO, COMPUTADORA_ELIMINADA -> "error";
             case SALIDA_PORTAL, FIN_SESION, SHADOW -> "secondary";
             default -> "outline";
         };

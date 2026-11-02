@@ -185,6 +185,26 @@ public class AuditoriaService {
                 .construir());
     }
 
+    /** Eliminación DEFINITIVA de un usuario (el log se conserva aunque el usuario ya no exista). */
+    @Transactional
+    public void usuarioEliminado(Long actorId, String actorCorreo, Long usuarioAfectadoId, String detalle) {
+        registrar(EventoAuditoria.de(TipoEventoAuditoria.USUARIO_ELIMINADO, reloj.instant())
+                .actor(actorId, actorCorreo)
+                .usuarioAfectado(usuarioAfectadoId)
+                .detalle(detalle)
+                .construir());
+    }
+
+    /** Eliminación DEFINITIVA de una computadora (el log se conserva aunque la PC ya no exista). */
+    @Transactional
+    public void computadoraEliminada(Long actorId, String actorCorreo, Long computadoraId, String detalle) {
+        registrar(EventoAuditoria.de(TipoEventoAuditoria.COMPUTADORA_ELIMINADA, reloj.instant())
+                .actor(actorId, actorCorreo)
+                .computadora(computadoraId)
+                .detalle(detalle)
+                .construir());
+    }
+
     /** Cambio de la contraseña de una PC. Nunca se guarda la contraseña, solo el hecho. */
     @Transactional
     public void cambioPasswordPc(Long actorId, String actorCorreo, Long computadoraId) {

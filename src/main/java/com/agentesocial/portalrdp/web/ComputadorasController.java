@@ -193,4 +193,18 @@ public class ComputadorasController {
         }
         return "redirect:/web/admin/computadoras/" + id;
     }
+
+    @PostMapping("/{id}/eliminar")
+    public String eliminar(@PathVariable Long id,
+                           @AuthenticationPrincipal PrincipalPortal actor,
+                           RedirectAttributes flash) {
+        try {
+            computadoraService.eliminar(id, actor.getUsuarioId(), actor.getCorreo());
+            flash.addFlashAttribute("exito", "Computadora eliminada definitivamente. Su historial de auditoría se conserva.");
+        } catch (ReglaNegocioException e) {
+            flash.addFlashAttribute("error", e.getMessage());
+            return "redirect:/web/admin/computadoras/" + id;
+        }
+        return "redirect:/web/admin/computadoras";
+    }
 }

@@ -32,15 +32,30 @@ public class UsuarioService {
     private final DepartamentoRepository departamentoRepository;
     private final ComputadoraRepository computadoraRepository;
     private final AuditoriaService auditoriaService;
+    private final com.agentesocial.portalrdp.repositorio.PreferenciasRdpRepository preferenciasRdpRepository;
+    private final com.agentesocial.portalrdp.repositorio.AccesoTemporalRepository accesoTemporalRepository;
+    private final com.agentesocial.portalrdp.repositorio.LanzamientoRepository lanzamientoRepository;
+    private final com.agentesocial.portalrdp.repositorio.OrdenAgenteRepository ordenAgenteRepository;
+    private final com.agentesocial.portalrdp.repositorio.SesionRdpRepository sesionRdpRepository;
 
     public UsuarioService(UsuarioRepository usuarioRepository,
                           DepartamentoRepository departamentoRepository,
                           ComputadoraRepository computadoraRepository,
-                          AuditoriaService auditoriaService) {
+                          AuditoriaService auditoriaService,
+                          com.agentesocial.portalrdp.repositorio.PreferenciasRdpRepository preferenciasRdpRepository,
+                          com.agentesocial.portalrdp.repositorio.AccesoTemporalRepository accesoTemporalRepository,
+                          com.agentesocial.portalrdp.repositorio.LanzamientoRepository lanzamientoRepository,
+                          com.agentesocial.portalrdp.repositorio.OrdenAgenteRepository ordenAgenteRepository,
+                          com.agentesocial.portalrdp.repositorio.SesionRdpRepository sesionRdpRepository) {
         this.usuarioRepository = usuarioRepository;
         this.departamentoRepository = departamentoRepository;
         this.computadoraRepository = computadoraRepository;
         this.auditoriaService = auditoriaService;
+        this.preferenciasRdpRepository = preferenciasRdpRepository;
+        this.accesoTemporalRepository = accesoTemporalRepository;
+        this.lanzamientoRepository = lanzamientoRepository;
+        this.ordenAgenteRepository = ordenAgenteRepository;
+        this.sesionRdpRepository = sesionRdpRepository;
     }
 
     /** Cantidad de computadoras del departamento indicado (métrica para el detalle). */
@@ -164,6 +179,32 @@ public class UsuarioService {
         usuario.setActivo(activo);
         auditoriaService.cambioUsuario(actorId, actorCorreo, id,
                 (activo ? "Reactivación" : "Baja") + " de usuario: " + usuario.getCorreo());
+    }
+
+    /**
+     * Elimina DEFINITIVAMENTE un usuario y sus datos operativos asociados: preferencias,
+     * accesos temporales (los suyos y los que otorgó a otros), lanzamientos y órdenes que
+     * creó. Las sesiones de las PCs se conservan, pero pierden la atribución a este usuario.
+     * La bitácora de auditoría NO se borra: queda como historial (la FK se quitó en V11) y se
+     * añade un evento del propio borrado. Acción irreversible (A2 "dar de baja" sigue siendo
+     * el camino reversible; esto es el borrado total).
+     */
+    @Transactional
+    public void eliminar(Long id, Long actorId, String actorCorreo) {
+        if (id.equals(actorId)) {
+            throw new ReglaNegocioException("No puedes eliminar tu propia cuenta.");
+        }
+        Usuario usuario = cargar(id);
+        // Auditoría primero: queda constancia con el correo aunque la fila desaparezca.
+        auditoriaService.usuarioEliminado(actorId, actorCorreo, id,
+                "Eliminación definitiva de usuario: " + usuario.getCorreo());
+        // Limpiar lo que lo referencia por clave foránea (datos operativos, no auditoría).
+        preferenciasRdpRepository.eliminarPorUsuario(id);
+        accesoTemporalRepository.eliminarPorUsuarioOOtorgante(id);
+        lanzamientoRepository.eliminarPorUsuario(id);
+        ordenAgenteRepository.eliminarPorCreador(id);
+        sesionRdpRepository.desatribuirUsuario(id);
+        usuarioRepository.delete(usuario);
     }
 
     private Usuario cargar(Long id) {
